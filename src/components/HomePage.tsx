@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Plus, Calendar, AlertCircle, TrendingUp } from 'lucide-react';
+import { Plus, Calendar, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
 import PetAvatar from './PetAvatar';
 import { Pet, Reminder, Expense } from '../types/pet';
 
