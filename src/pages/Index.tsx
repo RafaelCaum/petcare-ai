@@ -1,14 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
 import PetPage from '../components/PetPage';
 import ExpensesPage from '../components/ExpensesPage';
 import ProfilePage from '../components/ProfilePage';
+import SplashScreen from '../components/SplashScreen';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [showSplash, setShowSplash] = useState(true);
+
+  // Hide splash screen after 2.5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Mock data - this would come from your backend/database
   const [user] = useState<User>({
@@ -179,17 +189,21 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-md mx-auto bg-white min-h-screen relative">
-        {/* Main Content */}
-        <div className="px-4 pt-4">
-          {renderActiveTab()}
-        </div>
+    <>
+      <SplashScreen isVisible={showSplash} />
+      
+      <div className={`min-h-screen bg-gray-50 transition-opacity duration-500 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="max-w-md mx-auto bg-white min-h-screen relative">
+          {/* Main Content */}
+          <div className="px-4 pt-4">
+            {renderActiveTab()}
+          </div>
 
-        {/* Bottom Navigation */}
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Bottom Navigation */}
+          <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
