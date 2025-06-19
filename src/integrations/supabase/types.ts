@@ -9,7 +9,269 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          notes: string | null
+          pet_id: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          notes?: string | null
+          pet_id: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          notes?: string | null
+          pet_id?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_user_email_fkey"
+            columns: ["user_email"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
+      pets: {
+        Row: {
+          avatar: string | null
+          birth_date: string | null
+          breed: string | null
+          color: string | null
+          created_at: string
+          gender: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_email: string
+          weight: number | null
+        }
+        Insert: {
+          avatar?: string | null
+          birth_date?: string | null
+          breed?: string | null
+          color?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+          user_email: string
+          weight?: number | null
+        }
+        Update: {
+          avatar?: string | null
+          birth_date?: string | null
+          breed?: string | null
+          color?: string | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_email?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pets_user_email_fkey"
+            columns: ["user_email"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
+      reminders: {
+        Row: {
+          completed: boolean
+          created_at: string
+          date: string
+          email_reminder: boolean
+          id: string
+          notes: string | null
+          pet_id: string
+          sms_reminder: boolean
+          time: string
+          title: string
+          type: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          date: string
+          email_reminder?: boolean
+          id?: string
+          notes?: string | null
+          pet_id: string
+          sms_reminder?: boolean
+          time: string
+          title: string
+          type: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          date?: string
+          email_reminder?: boolean
+          id?: string
+          notes?: string | null
+          pet_id?: string
+          sms_reminder?: boolean
+          time?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_user_email_fkey"
+            columns: ["user_email"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          subscription_end_date: string | null
+          subscription_status: string
+          trial_start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string
+          trial_start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string
+          trial_start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vaccinations: {
+        Row: {
+          created_at: string
+          date_given: string
+          id: string
+          image_url: string | null
+          next_due_date: string
+          notes: string | null
+          pet_id: string
+          updated_at: string
+          user_email: string
+          vaccine_name: string
+          veterinarian: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_given: string
+          id?: string
+          image_url?: string | null
+          next_due_date: string
+          notes?: string | null
+          pet_id: string
+          updated_at?: string
+          user_email: string
+          vaccine_name: string
+          veterinarian?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_given?: string
+          id?: string
+          image_url?: string | null
+          next_due_date?: string
+          notes?: string | null
+          pet_id?: string
+          updated_at?: string
+          user_email?: string
+          vaccine_name?: string
+          veterinarian?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccinations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vaccinations_user_email_fkey"
+            columns: ["user_email"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["email"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
