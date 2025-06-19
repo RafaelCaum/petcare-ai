@@ -4,7 +4,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
 import PetPage from '../components/PetPage';
 import ExpensesPage from '../components/ExpensesPage';
-import ProfilePage from '../components/ProfilePage';
+import ProfilePageWithLogout from '../components/ProfilePageWithLogout';
 import SplashScreen from '../components/SplashScreen';
 import EmailLogin from '../components/EmailLogin';
 import { useSupabaseData } from '../hooks/useSupabaseData';
@@ -111,7 +111,7 @@ const Index = () => {
         );
       case 'profile':
         return (
-          <ProfilePage
+          <ProfilePageWithLogout
             user={user || currentUser!}
             onEditProfile={handleEditProfile}
             onManageSubscription={handleManageSubscription}

@@ -139,7 +139,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         .insert({
           pet_id: expense.petId,
           user_email: userEmail,
-          amount: expense.amount.toString(),
+          amount: expense.amount,
           category: expense.category,
           description: expense.description,
           date: expense.date,
@@ -153,7 +153,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       const newExpense: Expense = {
         id: data.id,
         petId: data.pet_id,
-        amount: parseFloat(data.amount),
+        amount: parseFloat(data.amount.toString()),
         category: data.category as 'grooming' | 'vet' | 'food' | 'toys' | 'supplies' | 'medication' | 'other',
         description: data.description,
         date: data.date,
