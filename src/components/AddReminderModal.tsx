@@ -20,12 +20,12 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
   const [smsReminder, setSmsReminder] = useState(false);
 
   const reminderTypes = [
-    { value: 'vaccine', label: 'Vacinação' },
-    { value: 'vet', label: 'Consulta Veterinária' },
-    { value: 'grooming', label: 'Banho e Tosa' },
-    { value: 'bath', label: 'Banho' },
-    { value: 'medication', label: 'Medicação' },
-    { value: 'other', label: 'Outro' }
+    { value: 'vaccine', label: 'Vaccination' },
+    { value: 'vet', label: 'Veterinary Appointment' },
+    { value: 'grooming', label: 'Grooming' },
+    { value: 'bath', label: 'Bath' },
+    { value: 'medication', label: 'Medication' },
+    { value: 'other', label: 'Other' }
   ];
 
   const handleSave = () => {
@@ -62,7 +62,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center">
             <Bell className="mr-2 text-primary" size={20} />
-            Adicionar Lembrete
+            Add Reminder
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />
@@ -72,21 +72,21 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Título *
+              Title *
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Ex: Consulta de rotina"
+              placeholder="e.g., Routine checkup"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo *
+              Type *
             </label>
             <select
               value={type}
@@ -104,7 +104,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Data *
+                Date *
               </label>
               <input
                 type="date"
@@ -117,7 +117,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Horário *
+                Time *
               </label>
               <input
                 type="time"
@@ -131,20 +131,20 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Observações
+              Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Observações sobre o lembrete"
+              placeholder="Notes about the reminder"
               rows={3}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Notificações
+              Notifications
             </label>
             <div className="space-y-3">
               <label className="flex items-center">
@@ -154,7 +154,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
                   onChange={(e) => setEmailReminder(e.target.checked)}
                   className="rounded border-gray-300 text-primary focus:ring-primary mr-3"
                 />
-                <span className="text-sm">Lembrete por Email</span>
+                <span className="text-sm">Email Reminder</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -163,7 +163,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
                   onChange={(e) => setSmsReminder(e.target.checked)}
                   className="rounded border-gray-300 text-primary focus:ring-primary mr-3"
                 />
-                <span className="text-sm">Lembrete por SMS</span>
+                <span className="text-sm">SMS Reminder</span>
               </label>
             </div>
           </div>
@@ -174,7 +174,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={handleSave}
@@ -182,7 +182,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            Salvar
+            Save
           </button>
         </div>
       </div>

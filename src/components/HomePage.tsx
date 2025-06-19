@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Calendar, AlertCircle, TrendingUp, DollarSign, CalendarPlus } from 'lucide-react';
-import { Pet, Reminder, Expense } from '../types/pet';
+import { Pet, Reminder, Expense, Vaccination } from '../types/pet';
 import { AspectRatio } from './ui/aspect-ratio';
 import { Calendar as CalendarComponent } from './ui/calendar';
 
@@ -9,14 +9,46 @@ interface HomePageProps {
   pet: Pet | null;
   reminders: Reminder[];
   expenses: Expense[];
+  vaccinations: Vaccination[];
   onAddReminder: () => void;
   onAddExpense: () => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ pet, reminders, expenses, onAddReminder, onAddExpense }) => {
+const HomePage: React.FC<HomePageProps> = ({ 
+  pet, 
+  reminders, 
+  expenses, 
+  vaccinations, 
+  onAddReminder, 
+  onAddExpense 
+}) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  const upcomingReminders = reminders
+  // Convert upcoming vaccinations to reminder-like objects
+  const vaccinationReminders = useMemo(() => {
+    return vaccinations
+      .filter(v => v.nextDueDate && new Date(v.nextDueDate) >= new Date())
+      .map(v => ({
+        id: `vaccination-${v.id}`,
+        petId: v.petId,
+        title: `${v.vaccineName} - Next Dose`,
+        type: 'vaccine' as const,
+        date: v.nextDueDate,
+        time: '09:00', // Default time for vaccine reminders
+        notes: v.notes || '',
+        completed: false,
+        emailReminder: true,
+        smsReminder: false,
+        isVaccination: true
+      }));
+  }, [vaccinations]);
+
+  // Combine regular reminders with vaccination reminders
+  const allReminders = useMemo(() => {
+    return [...reminders, ...vaccinationReminders];
+  }, [reminders, vaccinationReminders]);
+
+  const upcomingReminders = allReminders
     .filter(r => !r.completed && new Date(r.date) >= new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3);
@@ -32,17 +64,17 @@ const HomePage: React.FC<HomePageProps> = ({ pet, reminders, expenses, onAddRemi
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', { 
+    return date.toLocaleDateString('en-US', { 
       weekday: 'short', 
       month: 'short', 
       day: 'numeric' 
     });
   };
 
-  // Função para adicionar evento na agenda do telefone
-  const addToCalendar = (reminder: Reminder) => {
+  // Function to add event to phone calendar
+  const addToCalendar = (reminder: any) => {
     const startDate = new Date(`${reminder.date}T${reminder.time}`);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hora de duração
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
     const event = {
       title: reminder.title,
@@ -52,7 +84,7 @@ const HomePage: React.FC<HomePageProps> = ({ pet, reminders, expenses, onAddRemi
       location: ''
     };
 
-    // Criar URL para agenda (formato universal)
+    // Create calendar URL (universal format)
     const calendarUrl = `data:text/calendar;charset=utf8,BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
@@ -63,7 +95,7 @@ DESCRIPTION:${event.description}
 END:VEVENT
 END:VCALENDAR`;
 
-    // Criar link para download
+    // Create download link
     const link = document.createElement('a');
     link.href = encodeURI(calendarUrl);
     link.download = `${reminder.title}.ics`;
@@ -72,17 +104,17 @@ END:VCALENDAR`;
     document.body.removeChild(link);
   };
 
-  // Verificar se uma data tem lembretes
+  // Check if a date has reminders
   const hasReminders = (date: Date) => {
-    return reminders.some(reminder => {
+    return allReminders.some(reminder => {
       const reminderDate = new Date(reminder.date);
       return reminderDate.toDateString() === date.toDateString();
     });
   };
 
-  // Obter lembretes para uma data específica
+  // Get reminders for a specific date
   const getRemindersForDate = (date: Date) => {
-    return reminders.filter(reminder => {
+    return allReminders.filter(reminder => {
       const reminderDate = new Date(reminder.date);
       return reminderDate.toDateString() === date.toDateString();
     });
@@ -92,7 +124,7 @@ END:VCALENDAR`;
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
-      {/* Logo da Marca */}
+      {/* Brand Logo */}
       <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
         <div className="text-center">
           <div className="w-32 mx-auto">
@@ -107,12 +139,12 @@ END:VCALENDAR`;
         </div>
       </div>
 
-      {/* Calendário */}
+      {/* Calendar */}
       <div className="pet-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center">
             <Calendar className="mr-2 text-primary" size={20} />
-            Calendário de Compromissos
+            Appointments Calendar
           </h2>
         </div>
         
@@ -135,11 +167,11 @@ END:VCALENDAR`;
           />
         </div>
 
-        {/* Compromissos do dia selecionado */}
+        {/* Appointments for selected date */}
         {selectedDate && (
           <div className="mt-4">
             <h3 className="font-medium mb-3 text-gray-700">
-              Compromissos para {selectedDate.toLocaleDateString('pt-BR')}:
+              Appointments for {selectedDate.toLocaleDateString('en-US')}:
             </h3>
             {selectedDateReminders.length > 0 ? (
               <div className="space-y-2">
@@ -150,16 +182,17 @@ END:VCALENDAR`;
                         <div className="font-medium text-blue-900">{reminder.title}</div>
                         <div className="text-sm text-blue-600">
                           {reminder.time} • {reminder.type}
+                          {(reminder as any).isVaccination && ' (Next Vaccine Due)'}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => addToCalendar(reminder)}
                           className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
-                          title="Adicionar à agenda do telefone"
+                          title="Add to phone calendar"
                         >
                           <CalendarPlus size={16} className="mr-1" />
-                          Salvar
+                          Save
                         </button>
                         <div className="text-2xl">
                           {reminder.type === 'vaccine' && '💉'}
@@ -175,7 +208,7 @@ END:VCALENDAR`;
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">Nenhum compromisso nesta data</p>
+              <p className="text-gray-500 text-sm">No appointments on this date</p>
             )}
           </div>
         )}
@@ -187,29 +220,29 @@ END:VCALENDAR`;
           <div className="text-2xl font-bold text-primary">
             {upcomingReminders.length}
           </div>
-          <div className="text-sm text-gray-600">Próximos Lembretes</div>
+          <div className="text-sm text-gray-600">Upcoming Reminders</div>
         </div>
         <div className="pet-card text-center">
           <div className="text-2xl font-bold text-success">
-            R$ {thisMonthExpenses.toFixed(2)}
+            ${thisMonthExpenses.toFixed(2)}
           </div>
-          <div className="text-sm text-gray-600">Este Mês</div>
+          <div className="text-sm text-gray-600">This Month</div>
         </div>
       </div>
 
-      {/* Próximos Lembretes */}
+      {/* Upcoming Reminders */}
       <div className="pet-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center">
             <AlertCircle className="mr-2 text-primary" size={20} />
-            Próximos Lembretes
+            Upcoming Reminders
           </h2>
           <button
             onClick={onAddReminder}
             className="flex items-center text-primary hover:text-primary-dark transition-colors"
           >
             <Plus size={16} className="mr-1" />
-            Adicionar
+            Add
           </button>
         </div>
         
@@ -219,16 +252,23 @@ END:VCALENDAR`;
               <div key={reminder.id} className="reminder-card">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="font-medium text-blue-900">{reminder.title}</div>
+                    <div className="font-medium text-blue-900">
+                      {reminder.title}
+                      {(reminder as any).isVaccination && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          Vaccine Due
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-blue-600">
-                      {formatDate(reminder.date)} às {reminder.time}
+                      {formatDate(reminder.date)} at {reminder.time}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => addToCalendar(reminder)}
                       className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
-                      title="Adicionar à agenda do telefone"
+                      title="Add to phone calendar"
                     >
                       <CalendarPlus size={16} />
                     </button>
@@ -248,25 +288,25 @@ END:VCALENDAR`;
         ) : (
           <div className="text-center py-8 text-gray-500">
             <AlertCircle size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>Nenhum lembrete próximo</p>
-            <p className="text-sm">Toque em "Adicionar" para criar seu primeiro lembrete</p>
+            <p>No upcoming reminders</p>
+            <p className="text-sm">Tap "Add" to create your first reminder</p>
           </div>
         )}
       </div>
 
-      {/* Gastos Recentes */}
+      {/* Recent Expenses */}
       <div className="pet-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center">
             <TrendingUp className="mr-2 text-success" size={20} />
-            Gastos Recentes
+            Recent Expenses
           </h2>
           <button
             onClick={onAddExpense}
             className="flex items-center text-success hover:text-success-dark transition-colors"
           >
             <Plus size={16} className="mr-1" />
-            Adicionar
+            Add
           </button>
         </div>
         
@@ -282,7 +322,7 @@ END:VCALENDAR`;
                     </div>
                   </div>
                   <div className="text-lg font-bold text-green-700">
-                    R$ {expense.amount.toFixed(2)}
+                    ${expense.amount.toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -291,8 +331,8 @@ END:VCALENDAR`;
         ) : (
           <div className="text-center py-8 text-gray-500">
             <DollarSign size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>Nenhum gasto registrado</p>
-            <p className="text-sm">Acompanhe seus gastos com pet care</p>
+            <p>No expenses recorded</p>
+            <p className="text-sm">Track your pet care expenses</p>
           </div>
         )}
       </div>

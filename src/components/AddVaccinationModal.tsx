@@ -18,14 +18,14 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
   const [notes, setNotes] = useState('');
 
   const commonVaccines = [
-    'V8 / V10 (Múltipla)',
-    'Antirrábica',
-    'Giárdia',
-    'Gripe Canina',
-    'Leishmaniose',
-    'Tríplice Felina',
-    'Antirrábica Felina',
-    'FeLV (Leucemia Felina)'
+    'DHPP (Distemper, Hepatitis, Parvovirus, Parainfluenza)',
+    'Rabies',
+    'Giardia',
+    'Canine Influenza',
+    'Leishmaniasis',
+    'FVRCP (Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia)',
+    'Feline Rabies',
+    'FeLV (Feline Leukemia)'
   ];
 
   const handleSave = () => {
@@ -58,7 +58,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center">
             <Syringe className="mr-2 text-primary" size={20} />
-            Adicionar Vacinação
+            Add Vaccination
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />
@@ -68,7 +68,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nome da Vacina *
+              Vaccine Name *
             </label>
             <select
               value={vaccineName}
@@ -76,11 +76,11 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
-              <option value="">Selecione uma vacina</option>
+              <option value="">Select a vaccine</option>
               {commonVaccines.map(vaccine => (
                 <option key={vaccine} value={vaccine}>{vaccine}</option>
               ))}
-              <option value="custom">Outra (digite abaixo)</option>
+              <option value="custom">Other (type below)</option>
             </select>
             
             {vaccineName === 'custom' && (
@@ -89,14 +89,14 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
                 value=""
                 onChange={(e) => setVaccineName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mt-2"
-                placeholder="Digite o nome da vacina"
+                placeholder="Enter vaccine name"
               />
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data de Aplicação *
+              Date Given *
             </label>
             <input
               type="date"
@@ -109,7 +109,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Próxima Dose
+              Next Due Date
             </label>
             <input
               type="date"
@@ -121,26 +121,26 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Veterinário
+              Veterinarian
             </label>
             <input
               type="text"
               value={veterinarian}
               onChange={(e) => setVeterinarian(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Nome do veterinário"
+              placeholder="Veterinarian name"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Observações
+              Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Observações sobre a vacinação"
+              placeholder="Notes about the vaccination"
               rows={3}
             />
           </div>
@@ -151,7 +151,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={handleSave}
@@ -159,7 +159,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            Salvar
+            Save
           </button>
         </div>
       </div>

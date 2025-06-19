@@ -55,7 +55,7 @@ const Index = () => {
 
   const handleAddReminder = () => {
     if (pets.length === 0) {
-      toast.error('Adicione um pet primeiro!');
+      toast.error('Add a pet first!');
       return;
     }
     setAddReminderModalOpen(true);
@@ -63,7 +63,7 @@ const Index = () => {
 
   const handleAddExpense = () => {
     if (pets.length === 0) {
-      toast.error('Adicione um pet primeiro!');
+      toast.error('Add a pet first!');
       return;
     }
     setAddExpenseModalOpen(true);
@@ -75,7 +75,7 @@ const Index = () => {
 
   const handleAddVaccination = () => {
     if (pets.length === 0) {
-      toast.error('Adicione um pet primeiro!');
+      toast.error('Add a pet first!');
       return;
     }
     setAddVaccinationModalOpen(true);
@@ -86,24 +86,24 @@ const Index = () => {
   };
 
   const handleManageSubscription = () => {
-    toast.info('Funcionalidade de assinatura em desenvolvimento');
+    toast.info('Subscription feature in development');
   };
 
   const handleSaveProfile = async (userData: Partial<User>) => {
     try {
       await updateUser(userData);
-      toast.success('Perfil atualizado com sucesso!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
-      toast.error('Erro ao atualizar perfil');
+      toast.error('Error updating profile');
     }
   };
 
   const handleSavePet = async (petData: any) => {
     try {
       await addPet(petData);
-      toast.success('Pet adicionado com sucesso!');
+      toast.success('Pet added successfully!');
     } catch (error) {
-      toast.error('Erro ao adicionar pet');
+      toast.error('Error adding pet');
     }
   };
 
@@ -112,10 +112,10 @@ const Index = () => {
       const currentPet = pets[0];
       if (currentPet) {
         await addVaccination({ ...vaccinationData, petId: currentPet.id });
-        toast.success('Vacinação adicionada com sucesso!');
+        toast.success('Vaccination added successfully!');
       }
     } catch (error) {
-      toast.error('Erro ao adicionar vacinação');
+      toast.error('Error adding vaccination');
     }
   };
 
@@ -124,10 +124,10 @@ const Index = () => {
       const currentPet = pets[0];
       if (currentPet) {
         await addReminder({ ...reminderData, petId: currentPet.id });
-        toast.success('Lembrete adicionado com sucesso!');
+        toast.success('Reminder added successfully!');
       }
     } catch (error) {
-      toast.error('Erro ao adicionar lembrete');
+      toast.error('Error adding reminder');
     }
   };
 
@@ -136,10 +136,10 @@ const Index = () => {
       const currentPet = pets[0];
       if (currentPet) {
         await addExpense({ ...expenseData, petId: currentPet.id });
-        toast.success('Despesa adicionada com sucesso!');
+        toast.success('Expense added successfully!');
       }
     } catch (error) {
-      toast.error('Erro ao adicionar despesa');
+      toast.error('Error adding expense');
     }
   };
 
@@ -174,6 +174,7 @@ const Index = () => {
             pet={currentPet}
             reminders={reminders}
             expenses={expenses}
+            vaccinations={vaccinations}
             onAddReminder={handleAddReminder}
             onAddExpense={handleAddExpense}
           />
