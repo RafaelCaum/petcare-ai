@@ -1,74 +1,24 @@
-
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
 import PetPage from '../components/PetPage';
 import ExpensesPage from '../components/ExpensesPage';
 import ProfilePageWithLogout from '../components/ProfilePageWithLogout';
+import SplashScreen from '../components/SplashScreen';
+import EmailLogin from '../components/EmailLogin';
 import EditProfileModal from '../components/EditProfileModal';
 import EditPetModal from '../components/EditPetModal';
 import AddVaccinationModal from '../components/AddVaccinationModal';
 import AddReminderModal from '../components/AddReminderModal';
 import AddExpenseModal from '../components/AddExpenseModal';
+import { useSupabaseData } from '../hooks/useSupabaseData';
 import { User } from '../types/pet';
 import { toast } from 'sonner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
-  
-  // Mock data - you can replace this with real data later
-  const [user] = useState<User>({
-    id: '1',
-    name: 'Usuário Demo',
-    email: 'demo@example.com',
-    avatar: '👤'
-  });
-
-  const [pets] = useState([{
-    id: '1',
-    name: 'Rex',
-    type: 'dog' as const,
-    breed: 'Golden Retriever',
-    birthDate: '2020-01-15',
-    avatar: '🐕',
-    weight: 25,
-    color: 'Dourado',
-    gender: 'male' as const
-  }]);
-
-  const [reminders] = useState([
-    {
-      id: '1',
-      petId: '1',
-      title: 'Vacina anual',
-      description: 'Renovar vacina V10',
-      date: '2024-06-25',
-      type: 'vaccination' as const,
-      completed: false
-    }
-  ]);
-
-  const [expenses] = useState([
-    {
-      id: '1',
-      petId: '1',
-      amount: 150.00,
-      description: 'Consulta veterinária',
-      date: '2024-06-20',
-      category: 'veterinary' as const
-    }
-  ]);
-
-  const [vaccinations] = useState([
-    {
-      id: '1',
-      petId: '1',
-      name: 'V10',
-      date: '2023-06-20',
-      nextDue: '2024-06-20',
-      veterinarian: 'Dr. Silva'
-    }
-  ]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Modal states
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
@@ -77,11 +27,45 @@ const Index = () => {
   const [addReminderModalOpen, setAddReminderModalOpen] = useState(false);
   const [addExpenseModalOpen, setAddExpenseModalOpen] = useState(false);
 
+  const { 
+    user, 
+    pets, 
+    reminders, 
+    expenses, 
+    vaccinations, 
+    loading, 
+    addExpense, 
+    addReminder, 
+    addPet, 
+    updateUser, 
+    addVaccination 
+  } = useSupabaseData(userEmail);
+
+  const handleLoginSuccess = () => {
+    // The EmailLogin component handles the authentication internally
+    // We just need to handle the success callback
+    console.log('Login successful');
+  };
+
+  const handleLogout = () => {
+    setUserEmail(null);
+    setCurrentUser(null);
+    setActiveTab('home');
+  };
+
   const handleAddReminder = () => {
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
     setAddReminderModalOpen(true);
   };
 
   const handleAddExpense = () => {
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
     setAddExpenseModalOpen(true);
   };
 
@@ -90,6 +74,10 @@ const Index = () => {
   };
 
   const handleAddVaccination = () => {
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
     setAddVaccinationModalOpen(true);
   };
 
@@ -101,31 +89,82 @@ const Index = () => {
     toast.info('Funcionalidade de assinatura em desenvolvimento');
   };
 
-  const handleLogout = () => {
-    toast.info('Logout em desenvolvimento');
-  };
-
   const handleSaveProfile = async (userData: Partial<User>) => {
-    toast.success('Perfil atualizado com sucesso!');
+    try {
+      await updateUser(userData);
+      toast.success('Perfil atualizado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao atualizar perfil');
+    }
   };
 
   const handleSavePet = async (petData: any) => {
-    toast.success('Pet adicionado com sucesso!');
+    try {
+      await addPet(petData);
+      toast.success('Pet adicionado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao adicionar pet');
+    }
   };
 
   const handleSaveVaccination = async (vaccinationData: any) => {
-    toast.success('Vacinação adicionada com sucesso!');
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addVaccination({ ...vaccinationData, petId: currentPet.id });
+        toast.success('Vacinação adicionada com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar vacinação');
+    }
   };
 
   const handleSaveReminder = async (reminderData: any) => {
-    toast.success('Lembrete adicionado com sucesso!');
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addReminder({ ...reminderData, petId: currentPet.id });
+        toast.success('Lembrete adicionado com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar lembrete');
+    }
   };
 
   const handleSaveExpense = async (expenseData: any) => {
-    toast.success('Despesa adicionada com sucesso!');
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addExpense({ ...expenseData, petId: currentPet.id });
+        toast.success('Despesa adicionada com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar despesa');
+    }
   };
 
-  const currentPet = pets[0];
+  // Show login if no user is logged in
+  if (!userEmail) {
+    return <EmailLogin onSuccess={handleLoginSuccess} />;
+  }
+
+  // Show loading while fetching data
+  if (loading) {
+    return <SplashScreen isVisible={true} />;
+  }
+
+  // Get the first pet for now (we'll handle multiple pets later)
+  const currentPet = pets[0] || {
+    id: 'temp',
+    name: 'Add Your Pet',
+    type: 'dog' as const,
+    breed: '',
+    birthDate: new Date().toISOString().split('T')[0],
+    avatar: '🐕',
+    weight: 0,
+    color: '',
+    gender: 'male' as const
+  };
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -158,7 +197,7 @@ const Index = () => {
       case 'profile':
         return (
           <ProfilePageWithLogout
-            user={user}
+            user={user || currentUser!}
             onEditProfile={handleEditProfile}
             onManageSubscription={handleManageSubscription}
             onLogout={handleLogout}
@@ -182,14 +221,14 @@ const Index = () => {
 
         {/* Modals */}
         <EditProfileModal
-          user={user}
+          user={user || currentUser!}
           isOpen={editProfileModalOpen}
           onClose={() => setEditProfileModalOpen(false)}
           onSave={handleSaveProfile}
         />
 
         <EditPetModal
-          pet={currentPet}
+          pet={pets.length > 0 ? pets[0] : undefined}
           isOpen={editPetModalOpen}
           onClose={() => setEditPetModalOpen(false)}
           onSave={handleSavePet}
