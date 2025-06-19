@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Navigation, AlertTriangle, Loader2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -94,7 +93,6 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
         const isCurrentlyOpen = isClinicOpen(clinic);
         
         // Get today's hours
-        const today = new Date().toLocaleLowerCase().substring(0, 3);
         const dayMapping: { [key: number]: string } = {
           0: 'sunday',
           1: 'monday', 

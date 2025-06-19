@@ -37,7 +37,6 @@ export function isClinicOpen(clinic: { isOpen24Hours: boolean; openingHours: { [
   }
   
   const now = new Date();
-  const dayOfWeek = now.toLocaleLowerCase().substring(0, 3);
   const currentTime = now.getHours() * 100 + now.getMinutes();
   
   const dayMapping: { [key: number]: string } = {
