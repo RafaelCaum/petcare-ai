@@ -50,6 +50,10 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) =
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+  // Gerar anos de 2025 em diante
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from({ length: 10 }, (_, i) => currentYear + i);
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
@@ -107,7 +111,7 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) =
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              {[2024, 2023, 2022].map(year => (
+              {availableYears.map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
