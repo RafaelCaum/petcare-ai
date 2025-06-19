@@ -61,6 +61,7 @@ export const useSupabaseData = (userEmail: string | null) => {
           weight: pet.weight,
           color: pet.color,
           gender: pet.gender as 'male' | 'female',
+          photoUrl: pet.photo_url,
         })));
       }
 
@@ -126,6 +127,45 @@ export const useSupabaseData = (userEmail: string | null) => {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const uploadPetPhoto = async (file: File, petId: string) => {
+    if (!userEmail) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${petId}-${Date.now()}.${fileExt}`;
+      const filePath = `${userEmail}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('pet-photos')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('pet-photos')
+        .getPublicUrl(filePath);
+
+      // Update pet with photo URL
+      const { error: updateError } = await supabase
+        .from('pets')
+        .update({ photo_url: publicUrl })
+        .eq('id', petId)
+        .eq('user_email', userEmail);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setPets(prev => prev.map(pet => 
+        pet.id === petId ? { ...pet, photoUrl: publicUrl } : pet
+      ));
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading pet photo:', error);
+      throw error;
     }
   };
 
@@ -227,6 +267,7 @@ export const useSupabaseData = (userEmail: string | null) => {
           weight: pet.weight,
           color: pet.color,
           avatar: pet.avatar,
+          photo_url: pet.photoUrl,
         })
         .select()
         .single();
@@ -243,6 +284,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         weight: data.weight,
         color: data.color,
         gender: data.gender as 'male' | 'female',
+        photoUrl: data.photo_url,
       };
 
       setPets(prev => [...prev, newPet]);
@@ -388,6 +430,7 @@ export const useSupabaseData = (userEmail: string | null) => {
     addVaccination,
     deleteVaccination,
     markVaccinationAsCompleted,
+    uploadPetPhoto,
     refetch: fetchAllData,
   };
 };

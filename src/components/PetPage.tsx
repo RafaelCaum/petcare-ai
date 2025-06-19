@@ -129,7 +129,12 @@ const PetPage: React.FC<PetPageProps> = ({
             </div>
             
             <div className="flex items-center space-x-4 mb-6">
-              <PetAvatar petType={pet.type} petName={pet.name} size="lg" />
+              <PetAvatar 
+                petType={pet.type} 
+                petName={pet.name} 
+                size="lg" 
+                photoUrl={pet.photoUrl}
+              />
               <div>
                 <h3 className="text-xl font-bold">{pet.name}</h3>
                 <p className="text-gray-600 capitalize">{pet.type} • {pet.breed}</p>

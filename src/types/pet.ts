@@ -1,4 +1,3 @@
-
 export interface Pet {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface Pet {
   weight?: number;
   color?: string;
   gender?: 'male' | 'female';
+  photoUrl?: string;
 }
 
 export interface Reminder {

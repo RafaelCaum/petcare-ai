@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Plus, Calendar, DollarSign, Activity, Syringe, Check, Clock } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -126,7 +125,12 @@ const HomePage: React.FC<HomePageProps> = ({
       {/* Pet Header */}
       <div className="pet-card">
         <div className="flex items-center space-x-4">
-          <PetAvatar petType={pet.type} petName={pet.name} size="lg" />
+          <PetAvatar 
+            petType={pet.type} 
+            petName={pet.name} 
+            size="lg" 
+            photoUrl={pet.photoUrl}
+          />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">Hello, {pet.name}! 👋</h1>
             <p className="text-gray-600">How's your furry friend today?</p>
@@ -198,8 +202,9 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge className={vaccination.statusInfo.color}>
-                  {vaccination.statusInfo.icon} {vaccination.statusInfo.text}
+                <Badge className={`${vaccination.statusInfo.color} flex items-center justify-center px-3 py-1`}>
+                  <span className="mr-1">{vaccination.statusInfo.icon}</span>
+                  <span className="text-xs">{vaccination.statusInfo.text}</span>
                 </Badge>
                 {(vaccination.statusInfo.status === 'overdue' || vaccination.statusInfo.status === 'due soon') && onMarkVaccinationCompleted && (
                   <AlertDialog>
@@ -288,4 +293,3 @@ const HomePage: React.FC<HomePageProps> = ({
 };
 
 export default HomePage;
-

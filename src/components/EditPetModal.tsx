@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Save, Camera } from 'lucide-react';
+import { X, Save, Camera, Upload } from 'lucide-react';
 import { Pet } from '../types/pet';
 
 interface EditPetModalProps {
@@ -8,9 +8,16 @@ interface EditPetModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (petData: Omit<Pet, 'id'>) => void;
+  onUploadPhoto?: (file: File, petId: string) => Promise<string | null>;
 }
 
-const EditPetModal: React.FC<EditPetModalProps> = ({ pet, isOpen, onClose, onSave }) => {
+const EditPetModal: React.FC<EditPetModalProps> = ({ 
+  pet, 
+  isOpen, 
+  onClose, 
+  onSave, 
+  onUploadPhoto 
+}) => {
   const [name, setName] = useState(pet?.name || '');
   const [type, setType] = useState<'dog' | 'cat'>(pet?.type || 'dog');
   const [breed, setBreed] = useState(pet?.breed || '');
@@ -18,21 +25,52 @@ const EditPetModal: React.FC<EditPetModalProps> = ({ pet, isOpen, onClose, onSav
   const [gender, setGender] = useState<'male' | 'female'>(pet?.gender || 'male');
   const [weight, setWeight] = useState(pet?.weight || 0);
   const [color, setColor] = useState(pet?.color || '');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(pet?.photoUrl || null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSave = () => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = async () => {
     if (!name.trim()) return;
 
-    onSave({
-      name: name.trim(),
-      type,
-      breed: breed.trim(),
-      birthDate,
-      gender,
-      weight: Number(weight) || 0,
-      color: color.trim(),
-      avatar: type === 'dog' ? '🐕' : '🐱'
-    });
-    onClose();
+    try {
+      setUploading(true);
+
+      let photoUrl = pet?.photoUrl;
+
+      // If there's a new file and we're editing an existing pet, upload it
+      if (selectedFile && pet?.id && onUploadPhoto) {
+        photoUrl = await onUploadPhoto(selectedFile, pet.id);
+      }
+
+      onSave({
+        name: name.trim(),
+        type,
+        breed: breed.trim(),
+        birthDate,
+        gender,
+        weight: Number(weight) || 0,
+        color: color.trim(),
+        avatar: type === 'dog' ? '🐕' : '🐱',
+        photoUrl: photoUrl || undefined
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error saving pet:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -50,6 +88,45 @@ const EditPetModal: React.FC<EditPetModalProps> = ({ pet, isOpen, onClose, onSav
         </div>
 
         <div className="space-y-4">
+          {/* Photo Upload Section */}
+          <div className="text-center">
+            <div className="mb-4">
+              {photoPreview ? (
+                <div className="relative w-24 h-24 mx-auto">
+                  <img
+                    src={photoPreview}
+                    alt="Pet preview"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+                  />
+                  <button
+                    onClick={() => {
+                      setPhotoPreview(null);
+                      setSelectedFile(null);
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
+                  <Camera size={32} className="text-gray-400" />
+                </div>
+              )}
+            </div>
+            
+            <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors">
+              <Upload size={16} className="mr-2" />
+              Adicionar Foto
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nome do Pet *
@@ -155,11 +232,11 @@ const EditPetModal: React.FC<EditPetModalProps> = ({ pet, isOpen, onClose, onSav
           </button>
           <button
             onClick={handleSave}
-            disabled={!name.trim()}
+            disabled={!name.trim() || uploading}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            Salvar
+            {uploading ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </div>
