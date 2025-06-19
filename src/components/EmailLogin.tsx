@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,7 +82,13 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <div className="text-4xl mb-4">🐾</div>
+          <div className="mb-4">
+            <img 
+              src="/lovable-uploads/37225868-33f4-46a9-a18a-13e3f2174f41.png" 
+              alt="PetCare AI - Two cute dogs"
+              className="w-32 h-32 mx-auto rounded-2xl shadow-gentle object-cover"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">PetCare AI</h1>
           <p className="text-gray-600">
             {isNewUser ? 'Create your account' : 'Enter your email to continue'}
