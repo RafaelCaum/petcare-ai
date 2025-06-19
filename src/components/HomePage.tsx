@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Plus, Calendar, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
-import PetAvatar from './PetAvatar';
 import { Pet, Reminder, Expense } from '../types/pet';
 
 interface HomePageProps {
@@ -39,35 +38,13 @@ const HomePage: React.FC<HomePageProps> = ({ pet, reminders, expenses, onAddRemi
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       {/* Hero Image Section */}
-      <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white shadow-soft">
-        <div className="text-center mb-4">
+      <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+        <div className="text-center">
           <img 
             src="/lovable-uploads/92b69a13-adf5-41ec-8d20-865983d3b0c6.png" 
-            alt="Happy dog and cat together"
+            alt="Happy dogs together"
             className="w-48 h-48 mx-auto rounded-2xl shadow-gentle object-cover"
           />
-        </div>
-        
-        <div className="flex items-center justify-center space-x-4">
-          {pet && (
-            <>
-              <PetAvatar petType={pet.type} petName={pet.name} size="lg" />
-              <div className="text-center">
-                <h1 className="text-2xl font-bold">Hello, {pet.name}! 👋</h1>
-                <p className="text-primary-foreground/80">
-                  Let's keep you healthy and happy
-                </p>
-              </div>
-            </>
-          )}
-          {!pet && (
-            <div className="text-center">
-              <h1 className="text-2xl font-bold">Welcome to Pet Care! 🐾</h1>
-              <p className="text-primary-foreground/80">
-                Set up your pet profile to get started
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
