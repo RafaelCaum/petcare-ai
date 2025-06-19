@@ -139,7 +139,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         .insert({
           pet_id: expense.petId,
           user_email: userEmail,
-          amount: expense.amount,
+          amount: expense.amount.toString(),
           category: expense.category,
           description: expense.description,
           date: expense.date,
@@ -153,7 +153,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       const newExpense: Expense = {
         id: data.id,
         petId: data.pet_id,
-        amount: parseFloat(data.amount.toString()),
+        amount: parseFloat(data.amount),
         category: data.category as 'grooming' | 'vet' | 'food' | 'toys' | 'supplies' | 'medication' | 'other',
         description: data.description,
         date: data.date,
@@ -212,6 +212,112 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
+  const addPet = async (pet: Omit<Pet, 'id'>) => {
+    if (!userEmail) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('pets')
+        .insert({
+          user_email: userEmail,
+          name: pet.name,
+          type: pet.type,
+          breed: pet.breed,
+          birth_date: pet.birthDate,
+          gender: pet.gender,
+          weight: pet.weight,
+          color: pet.color,
+          avatar: pet.avatar,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newPet: Pet = {
+        id: data.id,
+        name: data.name,
+        type: data.type as 'dog' | 'cat',
+        breed: data.breed,
+        birthDate: data.birth_date,
+        avatar: data.avatar || '🐕',
+        weight: data.weight,
+        color: data.color,
+        gender: data.gender as 'male' | 'female',
+      };
+
+      setPets(prev => [...prev, newPet]);
+      return newPet;
+    } catch (error) {
+      console.error('Error adding pet:', error);
+      throw error;
+    }
+  };
+
+  const updateUser = async (userData: Partial<User>) => {
+    if (!userEmail) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          name: userData.name,
+          phone: userData.phone,
+        })
+        .eq('email', userEmail)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setUser(prev => prev ? { ...prev, ...userData } : null);
+      return data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  };
+
+  const addVaccination = async (vaccination: Omit<Vaccination, 'id'>) => {
+    if (!userEmail) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('vaccinations')
+        .insert({
+          pet_id: vaccination.petId,
+          user_email: userEmail,
+          vaccine_name: vaccination.vaccineName,
+          date_given: vaccination.dateGiven,
+          next_due_date: vaccination.nextDueDate,
+          veterinarian: vaccination.veterinarian,
+          notes: vaccination.notes,
+          image_url: vaccination.imageUrl,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newVaccination: Vaccination = {
+        id: data.id,
+        petId: data.pet_id,
+        vaccineName: data.vaccine_name,
+        dateGiven: data.date_given,
+        nextDueDate: data.next_due_date,
+        veterinarian: data.veterinarian,
+        notes: data.notes,
+        imageUrl: data.image_url,
+      };
+
+      setVaccinations(prev => [...prev, newVaccination]);
+      return newVaccination;
+    } catch (error) {
+      console.error('Error adding vaccination:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     pets,
@@ -221,6 +327,9 @@ export const useSupabaseData = (userEmail: string | null) => {
     loading,
     addExpense,
     addReminder,
+    addPet,
+    updateUser,
+    addVaccination,
     refetch: fetchAllData,
   };
 };

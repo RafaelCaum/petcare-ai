@@ -7,15 +7,40 @@ import ExpensesPage from '../components/ExpensesPage';
 import ProfilePageWithLogout from '../components/ProfilePageWithLogout';
 import SplashScreen from '../components/SplashScreen';
 import EmailLogin from '../components/EmailLogin';
+import EditProfileModal from '../components/EditProfileModal';
+import EditPetModal from '../components/EditPetModal';
+import AddVaccinationModal from '../components/AddVaccinationModal';
+import AddReminderModal from '../components/AddReminderModal';
+import AddExpenseModal from '../components/AddExpenseModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { User } from '../types/pet';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  
+  // Modal states
+  const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
+  const [editPetModalOpen, setEditPetModalOpen] = useState(false);
+  const [addVaccinationModalOpen, setAddVaccinationModalOpen] = useState(false);
+  const [addReminderModalOpen, setAddReminderModalOpen] = useState(false);
+  const [addExpenseModalOpen, setAddExpenseModalOpen] = useState(false);
 
-  const { user, pets, reminders, expenses, vaccinations, loading, addExpense, addReminder } = useSupabaseData(userEmail);
+  const { 
+    user, 
+    pets, 
+    reminders, 
+    expenses, 
+    vaccinations, 
+    loading, 
+    addExpense, 
+    addReminder, 
+    addPet, 
+    updateUser, 
+    addVaccination 
+  } = useSupabaseData(userEmail);
 
   const handleLogin = (email: string, userData: any) => {
     setUserEmail(email);
@@ -29,33 +54,93 @@ const Index = () => {
   };
 
   const handleAddReminder = () => {
-    console.log('Add reminder clicked');
-    // TODO: Implement add reminder modal/form
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
+    setAddReminderModalOpen(true);
   };
 
   const handleAddExpense = () => {
-    console.log('Add expense clicked');
-    // TODO: Implement add expense modal/form
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
+    setAddExpenseModalOpen(true);
   };
 
   const handleEditPet = () => {
-    console.log('Edit pet clicked');
-    // TODO: Implement edit pet modal/form
+    setEditPetModalOpen(true);
   };
 
   const handleAddVaccination = () => {
-    console.log('Add vaccination clicked');
-    // TODO: Implement add vaccination modal/form
+    if (pets.length === 0) {
+      toast.error('Adicione um pet primeiro!');
+      return;
+    }
+    setAddVaccinationModalOpen(true);
   };
 
   const handleEditProfile = () => {
-    console.log('Edit profile clicked');
-    // TODO: Implement edit profile modal/form
+    setEditProfileModalOpen(true);
   };
 
   const handleManageSubscription = () => {
-    console.log('Manage subscription clicked');
-    // TODO: Implement subscription management
+    toast.info('Funcionalidade de assinatura em desenvolvimento');
+  };
+
+  const handleSaveProfile = async (userData: Partial<User>) => {
+    try {
+      await updateUser(userData);
+      toast.success('Perfil atualizado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao atualizar perfil');
+    }
+  };
+
+  const handleSavePet = async (petData: any) => {
+    try {
+      await addPet(petData);
+      toast.success('Pet adicionado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao adicionar pet');
+    }
+  };
+
+  const handleSaveVaccination = async (vaccinationData: any) => {
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addVaccination({ ...vaccinationData, petId: currentPet.id });
+        toast.success('Vacinação adicionada com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar vacinação');
+    }
+  };
+
+  const handleSaveReminder = async (reminderData: any) => {
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addReminder({ ...reminderData, petId: currentPet.id });
+        toast.success('Lembrete adicionado com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar lembrete');
+    }
+  };
+
+  const handleSaveExpense = async (expenseData: any) => {
+    try {
+      const currentPet = pets[0];
+      if (currentPet) {
+        await addExpense({ ...expenseData, petId: currentPet.id });
+        toast.success('Despesa adicionada com sucesso!');
+      }
+    } catch (error) {
+      toast.error('Erro ao adicionar despesa');
+    }
   };
 
   // Show login if no user is logged in
@@ -133,6 +218,42 @@ const Index = () => {
 
         {/* Bottom Navigation */}
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {/* Modals */}
+        <EditProfileModal
+          user={user || currentUser!}
+          isOpen={editProfileModalOpen}
+          onClose={() => setEditProfileModalOpen(false)}
+          onSave={handleSaveProfile}
+        />
+
+        <EditPetModal
+          pet={pets.length > 0 ? pets[0] : undefined}
+          isOpen={editPetModalOpen}
+          onClose={() => setEditPetModalOpen(false)}
+          onSave={handleSavePet}
+        />
+
+        <AddVaccinationModal
+          petId={currentPet.id}
+          isOpen={addVaccinationModalOpen}
+          onClose={() => setAddVaccinationModalOpen(false)}
+          onSave={handleSaveVaccination}
+        />
+
+        <AddReminderModal
+          petId={currentPet.id}
+          isOpen={addReminderModalOpen}
+          onClose={() => setAddReminderModalOpen(false)}
+          onSave={handleSaveReminder}
+        />
+
+        <AddExpenseModal
+          petId={currentPet.id}
+          isOpen={addExpenseModalOpen}
+          onClose={() => setAddExpenseModalOpen(false)}
+          onSave={handleSaveExpense}
+        />
       </div>
     </div>
   );
