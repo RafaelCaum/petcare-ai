@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Plus, Calendar, DollarSign, Activity, Syringe, Check, Clock } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -116,9 +117,9 @@ const HomePage: React.FC<HomePageProps> = ({
       {/* Logo */}
       <div className="text-center py-6">
         <img 
-          src="/lovable-uploads/ae20a4cf-bb68-4066-823d-d415a2647a7b.png" 
-          alt="Pet Care - Happy Dogs"
-          className="w-32 h-32 mx-auto rounded-3xl shadow-gentle object-cover"
+          src="/lovable-uploads/37225868-33f4-46a9-a18a-13e3f2174f41.png" 
+          alt="PetCare AI - Two cute dogs"
+          className="w-32 h-32 mx-auto rounded-2xl shadow-gentle object-cover"
         />
       </div>
 
@@ -287,3 +288,4 @@ const HomePage: React.FC<HomePageProps> = ({
 };
 
 export default HomePage;
+
