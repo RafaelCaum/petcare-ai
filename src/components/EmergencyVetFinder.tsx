@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Navigation, AlertTriangle, Loader2 } from 'lucide-react';
+import { MapPin, Phone, Navigation, AlertTriangle, Loader2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../integrations/supabase/client';
+import { MIAMI_VETERINARIANS, LocalVetClinic } from '../data/localVeterinarians';
+import { calculateDistance, isClinicOpen } from '../utils/distanceCalculator';
 
 interface VetClinic {
   id: string;
@@ -11,7 +13,8 @@ interface VetClinic {
   distance: number;
   rating: number;
   isOpen: boolean;
-  placeId?: string;
+  isEmergency?: boolean;
+  hours?: string;
 }
 
 interface EmergencyVetFinderProps {
@@ -45,18 +48,18 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
       console.log('User location:', latitude, longitude);
       setUserLocation({ lat: latitude, lng: longitude });
       
-      // Search for nearby veterinarians using our edge function
-      await searchNearbyVets(latitude, longitude);
+      // Search local veterinarians
+      searchLocalVets(latitude, longitude);
       
     } catch (error) {
       console.error('Error getting location:', error);
-      setLocationError('Unable to get your location. Please check location permissions.');
+      setLocationError('Unable to get your location. Showing Miami area veterinarians.');
       
       // Fallback to Miami/Brickell area if location fails
       const fallbackLat = 25.7617;
       const fallbackLng = -80.1918;
       setUserLocation({ lat: fallbackLat, lng: fallbackLng });
-      await searchNearbyVets(fallbackLat, fallbackLng);
+      searchLocalVets(fallbackLat, fallbackLng);
     } finally {
       setLoading(false);
     }
@@ -81,38 +84,66 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
     });
   };
 
-  const searchNearbyVets = async (lat: number, lng: number) => {
+  const searchLocalVets = (lat: number, lng: number) => {
     try {
-      console.log('Searching for veterinarians near:', lat, lng);
+      console.log('Searching local veterinarians near:', lat, lng);
       
-      const { data, error } = await supabase.functions.invoke('search-nearby-vets', {
-        body: {
-          latitude: lat,
-          longitude: lng,
-          radius: 8000 // 5 miles radius
-        }
+      // Calculate distances and prepare clinic data
+      const processedClinics: VetClinic[] = MIAMI_VETERINARIANS.map((clinic: LocalVetClinic) => {
+        const distance = calculateDistance(lat, lng, clinic.latitude, clinic.longitude);
+        const isCurrentlyOpen = isClinicOpen(clinic);
+        
+        // Get today's hours
+        const today = new Date().toLocaleLowerCase().substring(0, 3);
+        const dayMapping: { [key: number]: string } = {
+          0: 'sunday',
+          1: 'monday', 
+          2: 'tuesday',
+          3: 'wednesday',
+          4: 'thursday',
+          5: 'friday',
+          6: 'saturday'
+        };
+        const todayKey = dayMapping[new Date().getDay()];
+        const todayHours = clinic.openingHours[todayKey] || 'Closed';
+        
+        return {
+          id: clinic.id,
+          name: clinic.name,
+          address: clinic.address,
+          phone: clinic.phone,
+          distance: distance,
+          rating: clinic.rating,
+          isOpen: isCurrentlyOpen,
+          isEmergency: clinic.isEmergency,
+          hours: todayHours
+        };
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
+      // Sort by emergency first, then open clinics, then by distance
+      const sortedClinics = processedClinics.sort((a, b) => {
+        // Emergency clinics first
+        if (a.isEmergency && !b.isEmergency) return -1;
+        if (!a.isEmergency && b.isEmergency) return 1;
+        
+        // Open clinics before closed ones
+        if (a.isOpen && !b.isOpen) return -1;
+        if (!a.isOpen && b.isOpen) return 1;
+        
+        // Then sort by distance
+        return a.distance - b.distance;
+      });
 
-      console.log('Search results:', data);
-      setClinics(data || []);
+      console.log('Found veterinarians:', sortedClinics);
+      setClinics(sortedClinics);
       
-      if (!data || data.length === 0) {
-        toast.info('No veterinarians found nearby. Try expanding the search area.');
-      } else {
-        toast.success(`Found ${data.length} veterinarians nearby`);
-      }
+      const emergencyClinics = sortedClinics.filter(c => c.isEmergency);
+      toast.success(`Encontrados ${sortedClinics.length} veterinários (${emergencyClinics.length} de emergência 24h)`);
       
     } catch (error) {
-      console.error('Error searching for vets:', error);
-      toast.error('Error searching for nearby veterinarians');
-      
-      // Fallback to show message that search failed
-      setLocationError('Unable to search for veterinarians. Please try again.');
+      console.error('Error searching local vets:', error);
+      toast.error('Erro ao buscar veterinários');
+      setLocationError('Erro ao buscar veterinários. Tente novamente.');
     }
   };
 
@@ -153,7 +184,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle size={24} />
-              <h2 className="text-lg font-semibold">Emergency Vet SOS</h2>
+              <h2 className="text-lg font-semibold">SOS Veterinário</h2>
             </div>
             <button
               onClick={onClose}
@@ -163,7 +194,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
             </button>
           </div>
           <p className="text-sm mt-1 opacity-90">
-            Find emergency veterinarians near you
+            Encontre veterinários de emergência perto de você
           </p>
         </div>
 
@@ -174,7 +205,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
             className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
           >
             <Phone size={20} />
-            Emergency: Call 911
+            Emergência: Ligar 911
           </button>
         </div>
 
@@ -183,60 +214,77 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="animate-spin mr-2" size={24} />
-              <span>Finding nearby veterinarians...</span>
+              <span>Buscando veterinários próximos...</span>
             </div>
           ) : locationError ? (
-            <div className="text-center py-8">
-              <AlertTriangle className="mx-auto mb-2 text-yellow-500" size={48} />
-              <p className="text-gray-600 mb-4">{locationError}</p>
+            <div className="text-center py-4">
+              <AlertTriangle className="mx-auto mb-2 text-yellow-500" size={32} />
+              <p className="text-gray-600 mb-4 text-sm">{locationError}</p>
               <button
                 onClick={getCurrentLocationAndSearch}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
               >
-                Try Again
+                Tentar Novamente
               </button>
             </div>
           ) : clinics.length === 0 ? (
             <div className="text-center py-8">
               <MapPin className="mx-auto mb-2 text-gray-400" size={48} />
-              <p className="text-gray-600">No veterinarians found nearby</p>
+              <p className="text-gray-600">Nenhum veterinário encontrado</p>
               <button
                 onClick={getCurrentLocationAndSearch}
                 className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
-                Search Again
+                Buscar Novamente
               </button>
             </div>
           ) : (
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-800 mb-3">
-                Nearby Veterinarians ({clinics.length})
+                Veterinários Próximos ({clinics.length})
               </h3>
               
               {clinics.map((clinic) => (
                 <div
                   key={clinic.id}
                   className={`border rounded-lg p-4 ${
-                    clinic.isOpen ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+                    clinic.isEmergency
+                      ? 'border-red-200 bg-red-50'
+                      : clinic.isOpen 
+                        ? 'border-green-200 bg-green-50' 
+                        : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">{clinic.name}</h4>
-                      <p className="text-sm text-gray-600">{clinic.address}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-gray-800">{clinic.name}</h4>
+                        {clinic.isEmergency && (
+                          <span className="text-xs bg-red-600 text-white px-2 py-1 rounded-full">
+                            24H
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">{clinic.address}</p>
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm text-gray-500">
                           {clinic.distance} mi
                           {clinic.rating > 0 && ` • ⭐ ${clinic.rating}`}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded-full ${
+                          className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
                             clinic.isOpen
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {clinic.isOpen ? 'Open' : 'Closed'}
+                          <Clock size={12} />
+                          {clinic.isOpen ? 'Aberto' : 'Fechado'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {clinic.hours}
                         </span>
                       </div>
                     </div>
@@ -248,14 +296,14 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                       className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
                     >
                       <Phone size={16} />
-                      Call
+                      Ligar
                     </button>
                     <button
                       onClick={() => handleDirections(clinic.address)}
                       className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
                     >
                       <Navigation size={16} />
-                      Directions
+                      Direções
                     </button>
                   </div>
                 </div>
@@ -267,7 +315,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
         {/* Footer */}
         <div className="p-4 bg-gray-50 border-t">
           <p className="text-xs text-gray-500 text-center">
-            For severe emergencies, seek immediate veterinary care or call 911
+            Para emergências graves, procure atendimento veterinário imediato ou ligue 911
           </p>
         </div>
       </div>
