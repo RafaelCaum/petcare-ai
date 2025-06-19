@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { Edit, Plus, Calendar, MapPin, Book } from 'lucide-react';
 import PetAvatar from './PetAvatar';
+import EmergencyVetFinder from './EmergencyVetFinder';
 import { Pet, Vaccination } from '../types/pet';
 
 interface PetPageProps {
@@ -224,11 +224,9 @@ const PetPage: React.FC<PetPageProps> = ({ pet, vaccinations, onEditPet, onAddVa
           <div className="pet-card bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
             <h3 className="text-lg font-semibold text-red-800 mb-3">🚨 Emergency SOS</h3>
             <p className="text-red-700 text-sm mb-4">
-              In case of pet emergency, call your nearest 24/7 vet clinic
+              Em caso de emergência, encontre veterinários próximos à sua localização
             </p>
-            <button className="w-full bg-red-500 text-white py-3 rounded-xl font-medium hover:bg-red-600 transition-colors">
-              Find Emergency Vet
-            </button>
+            <EmergencyVetFinder />
           </div>
         </div>
       )}
