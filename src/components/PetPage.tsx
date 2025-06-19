@@ -1,18 +1,36 @@
-
 import React, { useState } from 'react';
-import { Edit, Plus, Calendar, MapPin, Book } from 'lucide-react';
+import { Edit, Plus, Calendar, MapPin, Book, Trash2 } from 'lucide-react';
 import PetAvatar from './PetAvatar';
 import EmergencyVetFinder from './EmergencyVetFinder';
 import { Pet, Vaccination } from '../types/pet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import { Button } from './ui/button';
 
 interface PetPageProps {
   pet: Pet | null;
   vaccinations: Vaccination[];
   onEditPet: () => void;
   onAddVaccination: () => void;
+  onDeleteVaccination?: (vaccinationId: string) => void;
 }
 
-const PetPage: React.FC<PetPageProps> = ({ pet, vaccinations, onEditPet, onAddVaccination }) => {
+const PetPage: React.FC<PetPageProps> = ({ 
+  pet, 
+  vaccinations, 
+  onEditPet, 
+  onAddVaccination, 
+  onDeleteVaccination 
+}) => {
   const [activeSection, setActiveSection] = useState<'profile' | 'vaccinations' | 'directory'>('profile');
   const [emergencyVetFinderOpen, setEmergencyVetFinderOpen] = useState(false);
 
@@ -173,9 +191,37 @@ const PetPage: React.FC<PetPageProps> = ({ pet, vaccinations, onEditPet, onAddVa
                     <div key={vaccination.id} className="border border-gray-200 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">{vaccination.vaccineName}</h3>
-                        <span className={`text-sm font-medium ${status.color}`}>
-                          {status.status}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-sm font-medium ${status.color}`}>
+                            {status.status}
+                          </span>
+                          {onDeleteVaccination && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                  <Trash2 size={16} />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Vaccination Record</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this vaccination record for {vaccination.vaccineName}? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => onDeleteVaccination(vaccination.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </div>
                       <div className="text-sm text-gray-600">
                         <p>Given: {new Date(vaccination.dateGiven).toLocaleDateString()}</p>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -39,7 +38,9 @@ const Index = () => {
     addReminder, 
     addPet, 
     updateUser, 
-    addVaccination 
+    addVaccination,
+    deleteVaccination,
+    markVaccinationAsCompleted 
   } = useSupabaseData(userEmail);
 
   const handleLogin = (email: string, userData: any) => {
@@ -143,6 +144,29 @@ const Index = () => {
     }
   };
 
+  const handleDeleteVaccination = async (vaccinationId: string) => {
+    try {
+      await deleteVaccination(vaccinationId);
+      toast.success('Vaccination deleted successfully!');
+    } catch (error) {
+      toast.error('Error deleting vaccination');
+    }
+  };
+
+  const handleMarkVaccinationCompleted = async (vaccinationId: string) => {
+    try {
+      // Calculate next due date (1 year from today)
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      const nextDueDate = nextYear.toISOString().split('T')[0];
+      
+      await markVaccinationAsCompleted(vaccinationId, nextDueDate);
+      toast.success('Vaccination marked as completed!');
+    } catch (error) {
+      toast.error('Error updating vaccination');
+    }
+  };
+
   // Show login if no user is logged in
   if (!userEmail) {
     return <EmailLogin onLogin={handleLogin} />;
@@ -177,6 +201,7 @@ const Index = () => {
             vaccinations={vaccinations}
             onAddReminder={handleAddReminder}
             onAddExpense={handleAddExpense}
+            onMarkVaccinationCompleted={handleMarkVaccinationCompleted}
           />
         );
       case 'pet':
@@ -186,6 +211,7 @@ const Index = () => {
             vaccinations={vaccinations}
             onEditPet={handleEditPet}
             onAddVaccination={handleAddVaccination}
+            onDeleteVaccination={handleDeleteVaccination}
           />
         );
       case 'expenses':

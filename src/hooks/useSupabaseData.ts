@@ -317,6 +317,63 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
+  const deleteVaccination = async (vaccinationId: string) => {
+    if (!userEmail) return;
+
+    try {
+      const { error } = await supabase
+        .from('vaccinations')
+        .delete()
+        .eq('id', vaccinationId)
+        .eq('user_email', userEmail);
+
+      if (error) throw error;
+
+      setVaccinations(prev => prev.filter(vaccination => vaccination.id !== vaccinationId));
+    } catch (error) {
+      console.error('Error deleting vaccination:', error);
+      throw error;
+    }
+  };
+
+  const markVaccinationAsCompleted = async (vaccinationId: string, newNextDueDate: string) => {
+    if (!userEmail) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('vaccinations')
+        .update({
+          date_given: new Date().toISOString().split('T')[0],
+          next_due_date: newNextDueDate,
+        })
+        .eq('id', vaccinationId)
+        .eq('user_email', userEmail)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updatedVaccination: Vaccination = {
+        id: data.id,
+        petId: data.pet_id,
+        vaccineName: data.vaccine_name,
+        dateGiven: data.date_given,
+        nextDueDate: data.next_due_date,
+        veterinarian: data.veterinarian,
+        notes: data.notes,
+        imageUrl: data.image_url,
+      };
+
+      setVaccinations(prev => prev.map(vaccination => 
+        vaccination.id === vaccinationId ? updatedVaccination : vaccination
+      ));
+      return updatedVaccination;
+    } catch (error) {
+      console.error('Error marking vaccination as completed:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     pets,
@@ -329,6 +386,8 @@ export const useSupabaseData = (userEmail: string | null) => {
     addPet,
     updateUser,
     addVaccination,
+    deleteVaccination,
+    markVaccinationAsCompleted,
     refetch: fetchAllData,
   };
 };

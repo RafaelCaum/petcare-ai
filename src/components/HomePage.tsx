@@ -1,17 +1,29 @@
-
-import React, { useState, useMemo } from 'react';
-import { Plus, Calendar, AlertCircle, TrendingUp, DollarSign, CalendarPlus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Calendar, DollarSign, Activity, Syringe, Check, Clock } from 'lucide-react';
+import PetAvatar from './PetAvatar';
 import { Pet, Reminder, Expense, Vaccination } from '../types/pet';
-import { AspectRatio } from './ui/aspect-ratio';
-import { Calendar as CalendarComponent } from './ui/calendar';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 
 interface HomePageProps {
-  pet: Pet | null;
+  pet: Pet;
   reminders: Reminder[];
   expenses: Expense[];
   vaccinations: Vaccination[];
   onAddReminder: () => void;
   onAddExpense: () => void;
+  onMarkVaccinationCompleted?: (vaccinationId: string) => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ 
@@ -20,211 +32,110 @@ const HomePage: React.FC<HomePageProps> = ({
   expenses, 
   vaccinations, 
   onAddReminder, 
-  onAddExpense 
+  onAddExpense,
+  onMarkVaccinationCompleted 
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedVaccination, setSelectedVaccination] = useState<string | null>(null);
 
-  // Convert upcoming vaccinations to reminder-like objects
-  const vaccinationReminders = useMemo(() => {
-    return vaccinations
-      .filter(v => v.nextDueDate && new Date(v.nextDueDate) >= new Date())
-      .map(v => ({
-        id: `vaccination-${v.id}`,
-        petId: v.petId,
-        title: `${v.vaccineName} - Next Dose`,
-        type: 'vaccine' as const,
-        date: v.nextDueDate,
-        time: '09:00', // Default time for vaccine reminders
-        notes: v.notes || '',
-        completed: false,
-        emailReminder: true,
-        smsReminder: false,
-        isVaccination: true
-      }));
-  }, [vaccinations]);
-
-  // Combine regular reminders with vaccination reminders
-  const allReminders = useMemo(() => {
-    return [...reminders, ...vaccinationReminders];
-  }, [reminders, vaccinationReminders]);
-
-  const upcomingReminders = allReminders
-    .filter(r => !r.completed && new Date(r.date) >= new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 3);
-
-  const thisMonthExpenses = expenses
-    .filter(e => {
-      const expenseDate = new Date(e.date);
-      const now = new Date();
-      return expenseDate.getMonth() === now.getMonth() && 
-             expenseDate.getFullYear() === now.getFullYear();
-    })
-    .reduce((total, expense) => total + expense.amount, 0);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  // Function to add event to phone calendar
-  const addToCalendar = (reminder: any) => {
-    const startDate = new Date(`${reminder.date}T${reminder.time}`);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
-
-    const event = {
-      title: reminder.title,
-      start: startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
-      end: endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
-      description: reminder.notes || '',
-      location: ''
+  const getVaccinationStatus = (vaccination: Vaccination) => {
+    const nextDue = new Date(vaccination.nextDueDate);
+    const today = new Date();
+    const daysDiff = Math.ceil((nextDue.getTime() - today.getTime()) / (1000 * 3600 * 24));
+    
+    if (daysDiff < 0) return { 
+      status: 'overdue', 
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: '🔴',
+      text: `${Math.abs(daysDiff)} days overdue`
     };
-
-    // Create calendar URL (universal format)
-    const calendarUrl = `data:text/calendar;charset=utf8,BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:${event.start}
-DTEND:${event.end}
-SUMMARY:${event.title}
-DESCRIPTION:${event.description}
-END:VEVENT
-END:VCALENDAR`;
-
-    // Create download link
-    const link = document.createElement('a');
-    link.href = encodeURI(calendarUrl);
-    link.download = `${reminder.title}.ics`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (daysDiff <= 7) return { 
+      status: 'due soon', 
+      color: 'bg-orange-100 text-orange-800 border-orange-200',
+      icon: '🟡',
+      text: daysDiff === 0 ? 'Due today' : `Due in ${daysDiff} days`
+    };
+    if (daysDiff <= 30) return { 
+      status: 'upcoming', 
+      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      icon: '🟡',
+      text: `Due in ${daysDiff} days`
+    };
+    return { 
+      status: 'up to date', 
+      color: 'bg-green-100 text-green-800 border-green-200',
+      icon: '🟢',
+      text: `Due in ${daysDiff} days`
+    };
   };
 
-  // Check if a date has reminders
-  const hasReminders = (date: Date) => {
-    return allReminders.some(reminder => {
-      const reminderDate = new Date(reminder.date);
-      return reminderDate.toDateString() === date.toDateString();
-    });
-  };
+  // Sort reminders by date and time
+  const sortedReminders = [...reminders].sort((a, b) => {
+    const dateA = new Date(a.date + 'T' + a.time);
+    const dateB = new Date(b.date + 'T' + b.time);
+    return dateA.getTime() - dateB.getTime();
+  });
 
-  // Get reminders for a specific date
-  const getRemindersForDate = (date: Date) => {
-    return allReminders.filter(reminder => {
-      const reminderDate = new Date(reminder.date);
-      return reminderDate.toDateString() === date.toDateString();
-    });
-  };
+  // Get upcoming reminders (next 3)
+  const upcomingReminders = sortedReminders.slice(0, 3);
 
-  const selectedDateReminders = selectedDate ? getRemindersForDate(selectedDate) : [];
+  // Sort expenses by date
+  const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Get recent expenses (last 3)
+  const recentExpenses = sortedExpenses.slice(0, 3);
+
+  // Get upcoming vaccination reminders with enhanced status
+  const upcomingVaccinations = vaccinations
+    .map(vaccination => ({
+      ...vaccination,
+      statusInfo: getVaccinationStatus(vaccination)
+    }))
+    .filter(vaccination => {
+      const nextDue = new Date(vaccination.nextDueDate);
+      const today = new Date();
+      const daysDiff = Math.ceil((nextDue.getTime() - today.getTime()) / (1000 * 3600 * 24));
+      return daysDiff <= 30; // Show vaccinations due within 30 days or overdue
+    })
+    .sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime());
+
+  const handleMarkVaccinationCompleted = (vaccinationId: string) => {
+    if (onMarkVaccinationCompleted) {
+      // Calculate next due date (1 year from today for most vaccines)
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      const nextDueDate = nextYear.toISOString().split('T')[0];
+      
+      onMarkVaccinationCompleted(vaccinationId);
+    }
+    setSelectedVaccination(null);
+  };
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
-      {/* Brand Logo */}
-      <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
-        <div className="text-center">
-          <div className="w-32 mx-auto">
-            <AspectRatio ratio={1 / 1}>
-              <img 
-                src="/lovable-uploads/5cd6c558-d62f-4923-8538-e379176079d1.png" 
-                alt="Pet Care Logo"
-                className="w-full h-full rounded-2xl shadow-gentle object-cover"
-              />
-            </AspectRatio>
-          </div>
-        </div>
-      </div>
-
-      {/* Calendar */}
+      {/* Pet Header */}
       <div className="pet-card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center">
-            <Calendar className="mr-2 text-primary" size={20} />
-            Appointments Calendar
-          </h2>
-        </div>
-        
-        <div className="bg-white rounded-xl">
-          <CalendarComponent
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            className="w-full"
-            modifiers={{
-              hasEvents: (date) => hasReminders(date)
-            }}
-            modifiersStyles={{
-              hasEvents: {
-                backgroundColor: 'rgb(99 102 241 / 0.2)',
-                color: 'rgb(99 102 241)',
-                fontWeight: 'bold'
-              }
-            }}
-          />
-        </div>
-
-        {/* Appointments for selected date */}
-        {selectedDate && (
-          <div className="mt-4">
-            <h3 className="font-medium mb-3 text-gray-700">
-              Appointments for {selectedDate.toLocaleDateString('en-US')}:
-            </h3>
-            {selectedDateReminders.length > 0 ? (
-              <div className="space-y-2">
-                {selectedDateReminders.map((reminder) => (
-                  <div key={reminder.id} className="reminder-card">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-blue-900">{reminder.title}</div>
-                        <div className="text-sm text-blue-600">
-                          {reminder.time} • {reminder.type}
-                          {(reminder as any).isVaccination && ' (Next Vaccine Due)'}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => addToCalendar(reminder)}
-                          className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
-                          title="Add to phone calendar"
-                        >
-                          <CalendarPlus size={16} className="mr-1" />
-                          Save
-                        </button>
-                        <div className="text-2xl">
-                          {reminder.type === 'vaccine' && '💉'}
-                          {reminder.type === 'vet' && '🏥'}
-                          {reminder.type === 'grooming' && '✂️'}
-                          {reminder.type === 'bath' && '🛁'}
-                          {reminder.type === 'medication' && '💊'}
-                          {reminder.type === 'other' && '📋'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-sm">No appointments on this date</p>
-            )}
+        <div className="flex items-center space-x-4">
+          <PetAvatar petType={pet.type} petName={pet.name} size="lg" />
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">Hello, {pet.name}! 👋</h1>
+            <p className="text-gray-600">How's your furry friend today?</p>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="pet-card text-center">
-          <div className="text-2xl font-bold text-primary">
-            {upcomingReminders.length}
-          </div>
+          <div className="text-2xl font-bold text-primary">{upcomingReminders.length}</div>
           <div className="text-sm text-gray-600">Upcoming Reminders</div>
         </div>
         <div className="pet-card text-center">
-          <div className="text-2xl font-bold text-success">
-            ${thisMonthExpenses.toFixed(2)}
+          <div className="text-2xl font-bold text-primary">{upcomingVaccinations.length}</div>
+          <div className="text-sm text-gray-600">Vaccines Due</div>
+        </div>
+        <div className="pet-card text-center">
+          <div className="text-2xl font-bold text-primary">
+            ${recentExpenses.reduce((sum, expense) => sum + expense.amount, 0).toFixed(0)}
           </div>
           <div className="text-sm text-gray-600">This Month</div>
         </div>
@@ -234,7 +145,7 @@ END:VCALENDAR`;
       <div className="pet-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center">
-            <AlertCircle className="mr-2 text-primary" size={20} />
+            <Calendar className="mr-2 text-primary" size={20} />
             Upcoming Reminders
           </h2>
           <button
@@ -245,96 +156,121 @@ END:VCALENDAR`;
             Add
           </button>
         </div>
-        
-        {upcomingReminders.length > 0 ? (
-          <div className="space-y-3">
-            {upcomingReminders.map((reminder) => (
-              <div key={reminder.id} className="reminder-card">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="font-medium text-blue-900">
-                      {reminder.title}
-                      {(reminder as any).isVaccination && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          Vaccine Due
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-blue-600">
-                      {formatDate(reminder.date)} at {reminder.time}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => addToCalendar(reminder)}
-                      className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
-                      title="Add to phone calendar"
-                    >
-                      <CalendarPlus size={16} />
-                    </button>
-                    <div className="text-2xl">
-                      {reminder.type === 'vaccine' && '💉'}
-                      {reminder.type === 'vet' && '🏥'}
-                      {reminder.type === 'grooming' && '✂️'}
-                      {reminder.type === 'bath' && '🛁'}
-                      {reminder.type === 'medication' && '💊'}
-                      {reminder.type === 'other' && '📋'}
-                    </div>
+
+        <div className="space-y-3">
+          {upcomingReminders.map((reminder) => (
+            <div key={reminder.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                <div>
+                  <div className="font-medium">{reminder.title}</div>
+                  <div className="text-sm text-gray-600">
+                    {new Date(reminder.date).toLocaleDateString()} at {reminder.time}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <AlertCircle size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No upcoming reminders</p>
-            <p className="text-sm">Tap "Add" to create your first reminder</p>
-          </div>
-        )}
+              <Badge variant="outline" className="capitalize">
+                {reminder.type}
+              </Badge>
+            </div>
+          ))}
+
+          {upcomingVaccinations.map((vaccination) => (
+            <div key={vaccination.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                <Syringe className="w-4 h-4 text-primary mr-3" />
+                <div>
+                  <div className="font-medium">{vaccination.vaccineName}</div>
+                  <div className="text-sm text-gray-600">
+                    Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge className={vaccination.statusInfo.color}>
+                  {vaccination.statusInfo.icon} {vaccination.statusInfo.text}
+                </Badge>
+                {(vaccination.statusInfo.status === 'overdue' || vaccination.statusInfo.status === 'due soon') && onMarkVaccinationCompleted && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
+                        <Check size={14} className="mr-1" />
+                        Mark Done
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Mark Vaccination as Completed</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to mark {vaccination.vaccineName} as completed? This will update the vaccination date to today and set the next due date to one year from now.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleMarkVaccinationCompleted(vaccination.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Mark as Done
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {upcomingReminders.length === 0 && upcomingVaccinations.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar size={48} className="mx-auto mb-3 text-gray-300" />
+              <p>No upcoming reminders</p>
+              <p className="text-sm">You're all caught up!</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Recent Expenses */}
       <div className="pet-card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center">
-            <TrendingUp className="mr-2 text-success" size={20} />
+            <DollarSign className="mr-2 text-primary" size={20} />
             Recent Expenses
           </h2>
           <button
             onClick={onAddExpense}
-            className="flex items-center text-success hover:text-success-dark transition-colors"
+            className="flex items-center text-primary hover:text-primary-dark transition-colors"
           >
             <Plus size={16} className="mr-1" />
             Add
           </button>
         </div>
-        
-        {expenses.length > 0 ? (
-          <div className="space-y-3">
-            {expenses.slice(0, 3).map((expense) => (
-              <div key={expense.id} className="expense-card">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-green-900">{expense.description}</div>
-                    <div className="text-sm text-green-600">
-                      {formatDate(expense.date)} • {expense.category}
-                    </div>
-                  </div>
-                  <div className="text-lg font-bold text-green-700">
-                    ${expense.amount.toFixed(2)}
+
+        <div className="space-y-3">
+          {recentExpenses.map((expense) => (
+            <div key={expense.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                <Activity className="w-4 h-4 text-primary mr-3" />
+                <div>
+                  <div className="font-medium">{expense.description}</div>
+                  <div className="text-sm text-gray-600">
+                    {new Date(expense.date).toLocaleDateString()}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <DollarSign size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No expenses recorded</p>
-            <p className="text-sm">Track your pet care expenses</p>
-          </div>
-        )}
+              <div className="font-medium">${expense.amount.toFixed(2)}</div>
+            </div>
+          ))}
+
+          {recentExpenses.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <DollarSign size={48} className="mx-auto mb-3 text-gray-300" />
+              <p>No recent expenses</p>
+              <p className="text-sm">Start tracking your pet's expenses!</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
