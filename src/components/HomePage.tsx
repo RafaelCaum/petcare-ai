@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, Calendar, DollarSign, Activity, Syringe, Check, Clock } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -112,6 +113,15 @@ const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
+      {/* Logo */}
+      <div className="text-center py-6">
+        <img 
+          src="/lovable-uploads/ae20a4cf-bb68-4066-823d-d415a2647a7b.png" 
+          alt="Pet Care - Happy Dogs"
+          className="w-32 h-32 mx-auto rounded-3xl shadow-gentle object-cover"
+        />
+      </div>
+
       {/* Pet Header */}
       <div className="pet-card">
         <div className="flex items-center space-x-4">
