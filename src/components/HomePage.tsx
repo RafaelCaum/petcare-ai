@@ -45,26 +45,22 @@ const HomePage: React.FC<HomePageProps> = ({
     
     if (daysDiff < 0) return { 
       status: 'overdue', 
-      color: 'bg-red-100 text-red-800 border-red-200',
-      icon: '🔴',
+      variant: 'destructive' as const,
       text: `${Math.abs(daysDiff)} days overdue`
     };
     if (daysDiff <= 7) return { 
       status: 'due soon', 
-      color: 'bg-orange-100 text-orange-800 border-orange-200',
-      icon: '🟡',
+      variant: 'secondary' as const,
       text: daysDiff === 0 ? 'Due today' : `Due in ${daysDiff} days`
     };
     if (daysDiff <= 30) return { 
       status: 'upcoming', 
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      icon: '🟡',
+      variant: 'outline' as const,
       text: `Due in ${daysDiff} days`
     };
     return { 
       status: 'up to date', 
-      color: 'bg-green-100 text-green-800 border-green-200',
-      icon: '🟢',
+      variant: 'outline' as const,
       text: `Due in ${daysDiff} days`
     };
   };
@@ -202,15 +198,19 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge className={`${vaccination.statusInfo.color} flex items-center justify-center px-3 py-1`}>
-                  <span className="mr-1">{vaccination.statusInfo.icon}</span>
-                  <span className="text-xs">{vaccination.statusInfo.text}</span>
-                </Badge>
+                <Button 
+                  size="sm" 
+                  variant={vaccination.statusInfo.variant}
+                  className="text-xs h-7"
+                >
+                  <Clock size={12} className="mr-1" />
+                  {vaccination.statusInfo.text}
+                </Button>
                 {(vaccination.statusInfo.status === 'overdue' || vaccination.statusInfo.status === 'due soon') && onMarkVaccinationCompleted && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
-                        <Check size={14} className="mr-1" />
+                      <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50 h-7">
+                        <Check size={12} className="mr-1" />
                         Mark Done
                       </Button>
                     </AlertDialogTrigger>
