@@ -1,24 +1,62 @@
 
-import React, { useState } from 'react';
-import { MapPin, Phone, Clock, AlertCircle } from 'lucide-react';
-import { Button } from './ui/button';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Phone, Navigation, AlertTriangle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface VetClinic {
+  id: string;
   name: string;
   address: string;
-  phone?: string;
+  phone: string;
   distance: number;
-  isOpen?: boolean;
-  rating?: number;
+  rating: number;
+  isOpen: boolean;
+  placeId?: string;
 }
 
-const EmergencyVetFinder: React.FC = () => {
+interface EmergencyVetFinderProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose }) => {
+  const [clinics, setClinics] = useState<VetClinic[]>([]);
   const [loading, setLoading] = useState(false);
-  const [vetClinics, setVetClinics] = useState<VetClinic[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  const getCurrentLocation = (): Promise<{ lat: number; lng: number }> => {
+  useEffect(() => {
+    if (isOpen) {
+      getCurrentLocationAndSearch();
+    }
+  }, [isOpen]);
+
+  const getCurrentLocationAndSearch = async () => {
+    setLoading(true);
+    setLocationError(null);
+
+    try {
+      // Get user's current location
+      const position = await getCurrentPosition();
+      const { latitude, longitude } = position.coords;
+      
+      setUserLocation({ lat: latitude, lng: longitude });
+      
+      // Search for nearby veterinarians
+      await searchNearbyVets(latitude, longitude);
+      
+    } catch (error) {
+      console.error('Error getting location:', error);
+      setLocationError('Não foi possível obter sua localização. Verifique as permissões.');
+      
+      // Fallback to default location (São Paulo) if location fails
+      await searchNearbyVets(-23.5505, -46.6333);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentPosition = (): Promise<GeolocationPosition> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error('Geolocalização não é suportada neste navegador'));
@@ -26,104 +64,75 @@ const EmergencyVetFinder: React.FC = () => {
       }
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              reject(new Error('Permissão de localização negada'));
-              break;
-            case error.POSITION_UNAVAILABLE:
-              reject(new Error('Localização não disponível'));
-              break;
-            case error.TIMEOUT:
-              reject(new Error('Tempo esgotado para obter localização'));
-              break;
-            default:
-              reject(new Error('Erro desconhecido ao obter localização'));
-              break;
-          }
-        },
+        resolve,
+        reject,
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 300000, // 5 minutes
+          maximumAge: 300000 // 5 minutes
         }
       );
     });
   };
 
   const searchNearbyVets = async (lat: number, lng: number) => {
-    // Simulando busca de veterinários próximos
-    // Em produção, você usaria uma API real como Google Places API
-    const mockVets: VetClinic[] = [
-      {
-        name: 'Hospital Veterinário 24h Pet Emergency',
-        address: 'Rua das Flores, 123 - Centro',
-        phone: '(11) 3456-7890',
-        distance: 0.8,
-        isOpen: true,
-        rating: 4.8,
-      },
-      {
-        name: 'Clínica Veterinária ProntoPet',
-        address: 'Av. Principal, 456 - Jardim São Paulo',
-        phone: '(11) 9876-5432',
-        distance: 1.2,
-        isOpen: true,
-        rating: 4.5,
-      },
-      {
-        name: 'Centro Veterinário Animal Care',
-        address: 'Rua da Saúde, 789 - Vila Nova',
-        phone: '(11) 2345-6789',
-        distance: 2.1,
-        isOpen: false,
-        rating: 4.3,
-      },
-      {
-        name: 'Hospital Veterinário São Francisco',
-        address: 'Av. dos Animais, 321 - Bairro Alto',
-        phone: '(11) 8765-4321',
-        distance: 2.8,
-        isOpen: true,
-        rating: 4.6,
-      },
-    ];
-
-    // Simular delay de API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    return mockVets.sort((a, b) => a.distance - b.distance);
-  };
-
-  const findEmergencyVets = async () => {
-    setLoading(true);
-    setError(null);
-    setVetClinics([]);
-
     try {
-      const location = await getCurrentLocation();
-      setUserLocation(location);
+      // In a real implementation, you would use Google Places API or similar
+      // For now, I'll create a mock implementation that simulates real data
       
-      const vets = await searchNearbyVets(location.lat, location.lng);
-      setVetClinics(vets);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao buscar veterinários');
-    } finally {
-      setLoading(false);
+      // This would be your actual API call:
+      // const response = await fetch(`/api/search-vets?lat=${lat}&lng=${lng}`);
+      // const data = await response.json();
+      
+      // Mock data for demonstration (replace with real API)
+      const mockClinics: VetClinic[] = [
+        {
+          id: '1',
+          name: 'Hospital Veterinário 24h',
+          address: 'Rua das Palmeiras, 123 - Centro',
+          phone: '(11) 99999-1111',
+          distance: 0.8,
+          rating: 4.5,
+          isOpen: true,
+        },
+        {
+          id: '2',
+          name: 'Clínica Veterinária Pet Care',
+          address: 'Av. Principal, 456 - Jardim',
+          phone: '(11) 88888-2222',
+          distance: 1.2,
+          rating: 4.3,
+          isOpen: true,
+        },
+        {
+          id: '3',
+          name: 'VetMed Emergência',
+          address: 'Rua dos Animais, 789 - Vila Nova',
+          phone: '(11) 77777-3333',
+          distance: 2.1,
+          rating: 4.7,
+          isOpen: false,
+        },
+      ];
+
+      // Sort by distance
+      const sortedClinics = mockClinics.sort((a, b) => a.distance - b.distance);
+      setClinics(sortedClinics);
+      
+    } catch (error) {
+      console.error('Error searching for vets:', error);
+      toast.error('Erro ao buscar veterinários próximos');
     }
   };
 
-  const makePhoneCall = (phone: string) => {
-    window.open(`tel:${phone}`, '_self');
+  const handleCall = (phone: string) => {
+    // Remove any formatting and call
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.location.href = `tel:${cleanPhone}`;
   };
 
-  const openDirections = (address: string) => {
+  const handleDirections = (address: string) => {
+    // Open Google Maps with directions
     const encodedAddress = encodeURIComponent(address);
     if (userLocation) {
       window.open(
@@ -131,130 +140,139 @@ const EmergencyVetFinder: React.FC = () => {
         '_blank'
       );
     } else {
-      window.open(`https://www.google.com/maps/search/${encodedAddress}`, '_blank');
+      window.open(
+        `https://www.google.com/maps/search/${encodedAddress}`,
+        '_blank'
+      );
     }
   };
 
+  const handleEmergencyCall = () => {
+    // In Brazil, you could also add veterinary emergency numbers
+    window.location.href = 'tel:190'; // Police (they can help with emergency vet info)
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="space-y-4">
-      {!vetClinics.length && !loading ? (
-        <div className="text-center py-6">
-          <AlertCircle className="mx-auto mb-3 text-red-500" size={48} />
-          <h3 className="font-semibold text-red-800 mb-2">Emergência Veterinária</h3>
-          <p className="text-red-700 text-sm mb-4">
-            Encontre veterinários de emergência próximos à sua localização
-          </p>
-          <Button 
-            onClick={findEmergencyVets}
-            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3"
-            disabled={loading}
-          >
-            <MapPin className="mr-2" size={16} />
-            Encontrar Veterinários Próximos
-          </Button>
-        </div>
-      ) : null}
-
-      {loading && (
-        <div className="text-center py-6">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-3"></div>
-          <p className="text-gray-600">Buscando veterinários próximos...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="flex items-center">
-            <AlertCircle className="text-red-500 mr-2" size={20} />
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-          <Button 
-            onClick={findEmergencyVets}
-            className="mt-3 bg-red-500 hover:bg-red-600 text-white"
-            size="sm"
-          >
-            Tentar Novamente
-          </Button>
-        </div>
-      )}
-
-      {vetClinics.length > 0 && (
-        <div className="space-y-3">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-red-500 text-white p-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-red-800">Veterinários Próximos</h4>
-            <Button 
-              onClick={findEmergencyVets}
-              variant="outline"
-              size="sm"
-              disabled={loading}
-            >
-              Atualizar
-            </Button>
-          </div>
-          
-          {vetClinics.map((vet, index) => (
-            <div 
-              key={index} 
-              className={`border rounded-xl p-4 ${vet.isOpen ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  <h5 className="font-medium text-gray-900">{vet.name}</h5>
-                  <p className="text-sm text-gray-600 flex items-center mt-1">
-                    <MapPin size={14} className="mr-1" />
-                    {vet.address}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-medium text-gray-900">
-                    {vet.distance.toFixed(1)} km
-                  </span>
-                  {vet.isOpen !== undefined && (
-                    <div className={`text-xs mt-1 flex items-center ${vet.isOpen ? 'text-green-600' : 'text-red-600'}`}>
-                      <Clock size={12} className="mr-1" />
-                      {vet.isOpen ? 'Aberto' : 'Fechado'}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {vet.rating && (
-                <div className="text-sm text-gray-600 mb-3">
-                  ⭐ {vet.rating}/5.0
-                </div>
-              )}
-              
-              <div className="flex space-x-2">
-                {vet.phone && (
-                  <Button
-                    onClick={() => makePhoneCall(vet.phone!)}
-                    size="sm"
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    <Phone size={14} className="mr-1" />
-                    Ligar
-                  </Button>
-                )}
-                <Button
-                  onClick={() => openDirections(vet.address)}
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <MapPin size={14} className="mr-1" />
-                  Direções
-                </Button>
-              </div>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={24} />
+              <h2 className="text-lg font-semibold">SOS Veterinário</h2>
             </div>
-          ))}
-          
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
-            <p className="text-yellow-800 text-xs">
-              ⚠️ Em caso de emergência grave, ligue imediatamente para o veterinário mais próximo ou para o serviço de emergência veterinária 24h da sua região.
-            </p>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 text-xl"
+            >
+              ×
+            </button>
           </div>
+          <p className="text-sm mt-1 opacity-90">
+            Encontre veterinários de emergência próximos
+          </p>
         </div>
-      )}
+
+        {/* Emergency Call Button */}
+        <div className="p-4 bg-red-50 border-b">
+          <button
+            onClick={handleEmergencyCall}
+            className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
+          >
+            <Phone size={20} />
+            Emergência: Ligar 190
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 max-h-96 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="animate-spin mr-2" size={24} />
+              <span>Buscando veterinários próximos...</span>
+            </div>
+          ) : locationError ? (
+            <div className="text-center py-8">
+              <AlertTriangle className="mx-auto mb-2 text-yellow-500" size={48} />
+              <p className="text-gray-600 mb-4">{locationError}</p>
+              <button
+                onClick={getCurrentLocationAndSearch}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Tentar Novamente
+              </button>
+            </div>
+          ) : clinics.length === 0 ? (
+            <div className="text-center py-8">
+              <MapPin className="mx-auto mb-2 text-gray-400" size={48} />
+              <p className="text-gray-600">Nenhum veterinário encontrado nas proximidades</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-gray-800 mb-3">
+                Veterinários próximos ({clinics.length})
+              </h3>
+              
+              {clinics.map((clinic) => (
+                <div
+                  key={clinic.id}
+                  className={`border rounded-lg p-4 ${
+                    clinic.isOpen ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{clinic.name}</h4>
+                      <p className="text-sm text-gray-600">{clinic.address}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-gray-500">
+                          {clinic.distance} km • ⭐ {clinic.rating}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            clinic.isOpen
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {clinic.isOpen ? 'Aberto' : 'Fechado'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => handleCall(clinic.phone)}
+                      className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Phone size={16} />
+                      Ligar
+                    </button>
+                    <button
+                      onClick={() => handleDirections(clinic.address)}
+                      className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Navigation size={16} />
+                      Rotas
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-gray-50 border-t">
+          <p className="text-xs text-gray-500 text-center">
+            Em caso de emergência grave, procure o veterinário mais próximo imediatamente
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
