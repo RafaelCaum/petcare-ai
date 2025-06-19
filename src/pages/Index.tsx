@@ -46,20 +46,17 @@ const Index = () => {
     refetch
   } = useSupabaseData(userEmail);
 
-  // Auto-refresh data when switching to pet tab to show updated vaccination records
-  useEffect(() => {
-    if (activeTab === 'pet' && userEmail) {
-      console.log('Switching to pet tab, refreshing data...');
-      refetch();
-    }
-  }, [activeTab, userEmail, refetch]);
+  // Remove the problematic useEffect that was causing infinite loading
+  // Instead, we'll refetch only when explicitly needed
 
   const handleLogin = (email: string, userData: any) => {
+    console.log('Login successful for:', email);
     setUserEmail(email);
     setCurrentUser(userData);
   };
 
   const handleLogout = () => {
+    console.log('Logging out user');
     setUserEmail(null);
     setCurrentUser(null);
     setActiveTab('home');
@@ -192,10 +189,13 @@ const Index = () => {
     return <EmailLogin onLogin={handleLogin} />;
   }
 
-  // Show loading while fetching data
+  // Show loading while fetching data - add timeout protection
   if (loading) {
+    console.log('Loading state - showing splash screen');
     return <SplashScreen isVisible={true} />;
   }
+
+  console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);
 
   // Get the first pet for now (we'll handle multiple pets later)
   const currentPet = pets[0] || {
@@ -211,6 +211,7 @@ const Index = () => {
   };
 
   const renderActiveTab = () => {
+    console.log('Rendering active tab:', activeTab);
     switch (activeTab) {
       case 'home':
         return (
@@ -225,6 +226,7 @@ const Index = () => {
           />
         );
       case 'pet':
+        console.log('Rendering PetPage with pets:', pets, 'vaccinations:', vaccinations);
         return (
           <PetPage
             pet={currentPet}

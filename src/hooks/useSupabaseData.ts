@@ -16,23 +16,32 @@ export const useSupabaseData = (userEmail: string | null) => {
       return;
     }
 
+    console.log('useSupabaseData: Starting fetch for user:', userEmail);
     fetchAllData();
   }, [userEmail]);
 
   const fetchAllData = async () => {
-    if (!userEmail) return;
+    if (!userEmail) {
+      console.log('No userEmail provided to fetchAllData');
+      return;
+    }
 
     try {
+      console.log('Starting fetchAllData for:', userEmail);
       setLoading(true);
 
       // Fetch user data
-      const { data: userData } = await supabase
+      console.log('Fetching user data...');
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('email', userEmail)
         .single();
 
-      if (userData) {
+      if (userError) {
+        console.error('Error fetching user:', userError);
+      } else if (userData) {
+        console.log('User data fetched successfully:', userData);
         setUser({
           id: userData.id,
           name: userData.name,
@@ -45,12 +54,16 @@ export const useSupabaseData = (userEmail: string | null) => {
       }
 
       // Fetch pets
-      const { data: petsData } = await supabase
+      console.log('Fetching pets data...');
+      const { data: petsData, error: petsError } = await supabase
         .from('pets')
         .select('*')
         .eq('user_email', userEmail);
 
-      if (petsData) {
+      if (petsError) {
+        console.error('Error fetching pets:', petsError);
+      } else if (petsData) {
+        console.log('Pets data fetched successfully:', petsData);
         setPets(petsData.map(pet => ({
           id: pet.id,
           name: pet.name,
@@ -66,12 +79,16 @@ export const useSupabaseData = (userEmail: string | null) => {
       }
 
       // Fetch reminders
-      const { data: remindersData } = await supabase
+      console.log('Fetching reminders data...');
+      const { data: remindersData, error: remindersError } = await supabase
         .from('reminders')
         .select('*')
         .eq('user_email', userEmail);
 
-      if (remindersData) {
+      if (remindersError) {
+        console.error('Error fetching reminders:', remindersError);
+      } else if (remindersData) {
+        console.log('Reminders data fetched successfully:', remindersData);
         setReminders(remindersData.map(reminder => ({
           id: reminder.id,
           petId: reminder.pet_id,
@@ -87,12 +104,16 @@ export const useSupabaseData = (userEmail: string | null) => {
       }
 
       // Fetch expenses
-      const { data: expensesData } = await supabase
+      console.log('Fetching expenses data...');
+      const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
         .select('*')
         .eq('user_email', userEmail);
 
-      if (expensesData) {
+      if (expensesError) {
+        console.error('Error fetching expenses:', expensesError);
+      } else if (expensesData) {
+        console.log('Expenses data fetched successfully:', expensesData);
         setExpenses(expensesData.map(expense => ({
           id: expense.id,
           petId: expense.pet_id,
@@ -105,13 +126,16 @@ export const useSupabaseData = (userEmail: string | null) => {
       }
 
       // Fetch vaccinations
-      const { data: vaccinationsData } = await supabase
+      console.log('Fetching vaccinations data...');
+      const { data: vaccinationsData, error: vaccinationsError } = await supabase
         .from('vaccinations')
         .select('*')
         .eq('user_email', userEmail);
 
-      if (vaccinationsData) {
-        console.log('Fetched vaccinations data:', vaccinationsData);
+      if (vaccinationsError) {
+        console.error('Error fetching vaccinations:', vaccinationsError);
+      } else if (vaccinationsData) {
+        console.log('Vaccinations data fetched successfully:', vaccinationsData);
         setVaccinations(vaccinationsData.map(vaccination => ({
           id: vaccination.id,
           petId: vaccination.pet_id,
@@ -124,9 +148,11 @@ export const useSupabaseData = (userEmail: string | null) => {
         })));
       }
 
+      console.log('All data fetched successfully');
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error in fetchAllData:', error);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
