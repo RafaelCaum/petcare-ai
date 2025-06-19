@@ -1,1 +1,5 @@
+
 project_id = "sihhsdewcdisezcpbmst"
+
+[functions.search-nearby-vets]
+verify_jwt = false

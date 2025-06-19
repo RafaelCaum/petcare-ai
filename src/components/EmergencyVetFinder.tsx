@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Navigation, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '../integrations/supabase/client';
 
 interface VetClinic {
   id: string;
@@ -34,23 +34,29 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
   const getCurrentLocationAndSearch = async () => {
     setLoading(true);
     setLocationError(null);
+    setClinics([]);
 
     try {
+      console.log('Getting user location...');
       // Get user's current location
       const position = await getCurrentPosition();
       const { latitude, longitude } = position.coords;
       
+      console.log('User location:', latitude, longitude);
       setUserLocation({ lat: latitude, lng: longitude });
       
-      // Search for nearby veterinarians
+      // Search for nearby veterinarians using our edge function
       await searchNearbyVets(latitude, longitude);
       
     } catch (error) {
       console.error('Error getting location:', error);
       setLocationError('Unable to get your location. Please check location permissions.');
       
-      // Fallback to Miami location if location fails
-      await searchNearbyVets(25.7617, -80.1918); // Miami coordinates
+      // Fallback to Miami/Brickell area if location fails
+      const fallbackLat = 25.7617;
+      const fallbackLng = -80.1918;
+      setUserLocation({ lat: fallbackLat, lng: fallbackLng });
+      await searchNearbyVets(fallbackLat, fallbackLng);
     } finally {
       setLoading(false);
     }
@@ -77,69 +83,36 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
 
   const searchNearbyVets = async (lat: number, lng: number) => {
     try {
-      // In a real implementation, you would use Google Places API or similar
-      // For now, I'll create a mock implementation with Miami-area veterinarians
+      console.log('Searching for veterinarians near:', lat, lng);
       
-      // This would be your actual API call:
-      // const response = await fetch(`/api/search-vets?lat=${lat}&lng=${lng}`);
-      // const data = await response.json();
-      
-      // Mock data for Miami area demonstration (replace with real API)
-      const mockClinics: VetClinic[] = [
-        {
-          id: '1',
-          name: 'BluePearl Pet Hospital',
-          address: '2600 S University Dr, Davie, FL 33328',
-          phone: '(954) 473-4900',
-          distance: 0.8,
-          rating: 4.5,
-          isOpen: true,
-        },
-        {
-          id: '2',
-          name: 'VCA Hollywood Animal Hospital',
-          address: '920 N Federal Hwy, Hollywood, FL 33020',
-          phone: '(954) 920-3556',
-          distance: 1.2,
-          rating: 4.3,
-          isOpen: true,
-        },
-        {
-          id: '3',
-          name: 'Miami Emergency Veterinary Clinic',
-          address: '14790 Biscayne Blvd, North Miami Beach, FL 33181',
-          phone: '(305) 947-8387',
-          distance: 2.1,
-          rating: 4.7,
-          isOpen: false,
-        },
-        {
-          id: '4',
-          name: 'Aventura Animal Hospital',
-          address: '20803 Biscayne Blvd, Aventura, FL 33180',
-          phone: '(305) 932-8389',
-          distance: 3.2,
-          rating: 4.6,
-          isOpen: true,
-        },
-        {
-          id: '5',
-          name: 'Coral Gables Veterinary Hospital',
-          address: '285 Aragon Ave, Coral Gables, FL 33134',
-          phone: '(305) 446-4811',
-          distance: 4.1,
-          rating: 4.4,
-          isOpen: true,
-        },
-      ];
+      const { data, error } = await supabase.functions.invoke('search-nearby-vets', {
+        body: {
+          latitude: lat,
+          longitude: lng,
+          radius: 8000 // 5 miles radius
+        }
+      });
 
-      // Sort by distance
-      const sortedClinics = mockClinics.sort((a, b) => a.distance - b.distance);
-      setClinics(sortedClinics);
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('Search results:', data);
+      setClinics(data || []);
+      
+      if (!data || data.length === 0) {
+        toast.info('No veterinarians found nearby. Try expanding the search area.');
+      } else {
+        toast.success(`Found ${data.length} veterinarians nearby`);
+      }
       
     } catch (error) {
       console.error('Error searching for vets:', error);
       toast.error('Error searching for nearby veterinarians');
+      
+      // Fallback to show message that search failed
+      setLocationError('Unable to search for veterinarians. Please try again.');
     }
   };
 
@@ -227,6 +200,12 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
             <div className="text-center py-8">
               <MapPin className="mx-auto mb-2 text-gray-400" size={48} />
               <p className="text-gray-600">No veterinarians found nearby</p>
+              <button
+                onClick={getCurrentLocationAndSearch}
+                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Search Again
+              </button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -247,7 +226,8 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                       <p className="text-sm text-gray-600">{clinic.address}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-gray-500">
-                          {clinic.distance} mi • ⭐ {clinic.rating}
+                          {clinic.distance} mi
+                          {clinic.rating > 0 && ` • ⭐ ${clinic.rating}`}
                         </span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
