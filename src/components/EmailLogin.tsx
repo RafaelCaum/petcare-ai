@@ -1,184 +1,301 @@
+
 import React, { useState } from 'react';
-import { Mail, ArrowRight, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { supabase } from '../integrations/supabase/client';
 import { toast } from 'sonner';
+import OTPExpiryHandler from './OTPExpiryHandler';
 
 interface EmailLoginProps {
-  onLogin: (email: string, userData: any) => void;
+  onSuccess: () => void;
 }
 
-const EmailLogin: React.FC<EmailLoginProps> = ({ onLogin }) => {
+const EmailLogin: React.FC<EmailLoginProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'signup' | 'otp'>('signin');
+  const [otpSentTime, setOtpSentTime] = useState<Date | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
 
     setIsLoading(true);
-
     try {
-      // Check if user exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (checkError) {
-        throw checkError;
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Email não confirmado. Verifique sua caixa de entrada.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast.error('Email ou senha incorretos');
+        } else {
+          toast.error('Erro ao fazer login: ' + error.message);
+        }
+        return;
       }
 
-      if (existingUser) {
-        // User exists, log them in
-        onLogin(email, existingUser);
-        toast.success('Welcome back!');
-      } else {
-        // New user, show registration form
-        if (!isNewUser) {
-          setIsNewUser(true);
-          setIsLoading(false);
-          return;
-        }
-
-        if (!name) {
-          toast.error('Please enter your name');
-          setIsLoading(false);
-          return;
-        }
-
-        // Create new user
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert({
-            email,
-            name,
-            phone: phone || null,
-            subscription_status: 'trial',
-            trial_start_date: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          throw createError;
-        }
-
-        onLogin(email, newUser);
-        toast.success('Account created! Welcome to PetCare AI!');
+      if (data.user && data.session) {
+        toast.success('Login realizado com sucesso!');
+        onSuccess();
       }
     } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Error accessing your account. Please try again.');
+      toast.error('Erro inesperado durante o login');
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <div className="mb-4">
-            <img 
-              src="/lovable-uploads/37225868-33f4-46a9-a18a-13e3f2174f41.png" 
-              alt="PetCare AI - Two cute dogs"
-              className="w-32 h-32 mx-auto rounded-2xl shadow-gentle object-cover"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">PetCare AI</h1>
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error('Este email já está cadastrado. Tente fazer login.');
+          setMode('signin');
+        } else {
+          toast.error('Erro ao criar conta: ' + error.message);
+        }
+        return;
+      }
+
+      if (data.user && !data.session) {
+        setOtpSentTime(new Date());
+        setMode('otp');
+        toast.success('Código de confirmação enviado para seu email!');
+      } else if (data.user && data.session) {
+        toast.success('Conta criada com sucesso!');
+        onSuccess();
+      }
+    } catch (error) {
+      toast.error('Erro inesperado durante o cadastro');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOTPVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) {
+      toast.error('Por favor, digite o código de 6 dígitos');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'signup'
+      });
+
+      if (error) {
+        if (error.message.includes('expired')) {
+          toast.error('Código expirado. Solicite um novo código.');
+        } else if (error.message.includes('invalid')) {
+          toast.error('Código inválido. Verifique e tente novamente.');
+        } else {
+          toast.error('Erro na verificação: ' + error.message);
+        }
+        return;
+      }
+
+      if (data.user && data.session) {
+        toast.success('Email confirmado! Bem-vindo!');
+        onSuccess();
+      }
+    } catch (error) {
+      toast.error('Erro inesperado na verificação');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    setOtpSentTime(new Date());
+  };
+
+  if (mode === 'otp') {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Confirme seu email
+          </h2>
           <p className="text-gray-600">
-            {isNewUser ? 'Create your account' : 'Enter your email to continue'}
+            Enviamos um código de 6 dígitos para
           </p>
+          <p className="text-primary font-medium">{email}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleOTPVerification} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+              Código de confirmação
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="your@email.com"
-                required
-                disabled={isLoading}
-              />
-            </div>
+            <input
+              id="otp"
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="000000"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-2xl font-mono tracking-widest focus:ring-2 focus:ring-primary focus:border-transparent"
+              maxLength={6}
+              required
+            />
           </div>
 
-          {isNewUser && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Your full name"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone (Optional)
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Your phone number"
-                  disabled={isLoading}
-                />
-              </div>
-            </>
-          )}
+          <OTPExpiryHandler
+            onResendOTP={handleResendOTP}
+            otpSentTime={otpSentTime}
+            expiryMinutes={30}
+          />
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+            disabled={isLoading || otp.length !== 6}
+            className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <Loader2 className="animate-spin mr-2" size={20} />
-            ) : (
-              <ArrowRight className="mr-2" size={20} />
-            )}
-            {isLoading ? 'Processing...' : isNewUser ? 'Create Account' : 'Continue'}
+            {isLoading ? 'Verificando...' : 'Confirmar código'}
           </button>
 
-          {isNewUser && (
+          <button
+            type="button"
+            onClick={() => setMode('signup')}
+            className="w-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            Voltar
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {mode === 'signin' ? 'Entrar na conta' : 'Criar conta'}
+        </h2>
+        <p className="text-gray-600">
+          {mode === 'signin' 
+            ? 'Faça login para acessar seus pets' 
+            : 'Crie sua conta para começar'
+          }
+        </p>
+      </div>
+
+      <form onSubmit={mode === 'signin' ? handleSignIn : handleSignUp} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            Senha
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Sua senha"
+              className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+              minLength={mode === 'signup' ? 6 : undefined}
+            />
             <button
               type="button"
-              onClick={() => setIsNewUser(false)}
-              className="w-full text-gray-600 hover:text-gray-800 py-2 transition-colors"
-              disabled={isLoading}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
             >
-              Already have an account? Sign in
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
-          )}
-        </form>
-
-        {!isNewUser && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <strong>7-day free trial</strong> then $49/month. No credit card required to start.
-            </p>
           </div>
-        )}
+          {mode === 'signup' && (
+            <p className="text-xs text-gray-500 mt-1">
+              Mínimo de 6 caracteres
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading 
+            ? (mode === 'signin' ? 'Entrando...' : 'Criando conta...') 
+            : (mode === 'signin' ? 'Entrar' : 'Criar conta')
+          }
+        </button>
+      </form>
+
+      <div className="text-center">
+        <button
+          onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+          className="text-primary hover:text-primary-dark transition-colors"
+        >
+          {mode === 'signin' 
+            ? 'Não tem conta? Criar conta' 
+            : 'Já tem conta? Fazer login'
+          }
+        </button>
       </div>
     </div>
   );
