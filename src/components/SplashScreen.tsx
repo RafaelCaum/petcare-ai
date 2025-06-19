@@ -13,8 +13,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
       <div className="text-center text-white animate-fade-in">
         <div className="mb-8">
           <img 
-            src="/lovable-uploads/92b69a13-adf5-41ec-8d20-865983d3b0c6.png" 
-            alt="Pet Care - Dog and Cat"
+            src="/lovable-uploads/ae20a4cf-bb68-4066-823d-d415a2647a7b.png" 
+            alt="Pet Care - Happy Dogs"
             className="w-64 h-64 mx-auto rounded-3xl shadow-gentle object-cover animate-bounce-gentle"
           />
         </div>

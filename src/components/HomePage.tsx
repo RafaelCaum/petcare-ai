@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Plus, Calendar, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
 import { Pet, Reminder, Expense } from '../types/pet';
@@ -43,7 +44,7 @@ const HomePage: React.FC<HomePageProps> = ({ pet, reminders, expenses, onAddRemi
           <div className="w-64 mx-auto">
             <AspectRatio ratio={1 / 1}>
               <img 
-                src="/lovable-uploads/92b69a13-adf5-41ec-8d20-865983d3b0c6.png" 
+                src="/lovable-uploads/ae20a4cf-bb68-4066-823d-d415a2647a7b.png" 
                 alt="Happy dogs together"
                 className="w-full h-full rounded-2xl shadow-gentle object-cover"
               />
