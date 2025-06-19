@@ -98,6 +98,18 @@
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Remove any yellow background that might be applied to the viewport */
+  html, body, #root {
+    background-color: white !important;
+  }
+
+  /* Ensure mobile viewport doesn't have unwanted colors */
+  @media (max-width: 768px) {
+    html, body, #root {
+      background-color: white !important;
+    }
+  }
 }
 
 @layer components {
