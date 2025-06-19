@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
 import PetPage from '../components/PetPage';
@@ -42,8 +42,17 @@ const Index = () => {
     addVaccination,
     deleteVaccination,
     markVaccinationAsCompleted,
-    uploadPetPhoto 
+    uploadPetPhoto,
+    refetch
   } = useSupabaseData(userEmail);
+
+  // Auto-refresh data when switching to pet tab to show updated vaccination records
+  useEffect(() => {
+    if (activeTab === 'pet' && userEmail) {
+      console.log('Switching to pet tab, refreshing data...');
+      refetch();
+    }
+  }, [activeTab, userEmail, refetch]);
 
   const handleLogin = (email: string, userData: any) => {
     setUserEmail(email);
@@ -157,14 +166,23 @@ const Index = () => {
 
   const handleMarkVaccinationCompleted = async (vaccinationId: string) => {
     try {
+      console.log('handleMarkVaccinationCompleted called with ID:', vaccinationId);
+      
       // Calculate next due date (1 year from today)
       const nextYear = new Date();
       nextYear.setFullYear(nextYear.getFullYear() + 1);
       const nextDueDate = nextYear.toISOString().split('T')[0];
       
+      console.log('Calling markVaccinationAsCompleted...');
       await markVaccinationAsCompleted(vaccinationId, nextDueDate);
+      
+      console.log('Vaccination marked as completed, refreshing data...');
+      // Force refresh to ensure UI is updated
+      await refetch();
+      
       toast.success('Vaccination marked as completed!');
     } catch (error) {
+      console.error('Error in handleMarkVaccinationCompleted:', error);
       toast.error('Error updating vaccination');
     }
   };

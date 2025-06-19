@@ -111,6 +111,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         .eq('user_email', userEmail);
 
       if (vaccinationsData) {
+        console.log('Fetched vaccinations data:', vaccinationsData);
         setVaccinations(vaccinationsData.map(vaccination => ({
           id: vaccination.id,
           petId: vaccination.pet_id,
@@ -401,10 +402,18 @@ export const useSupabaseData = (userEmail: string | null) => {
     if (!userEmail) return;
 
     try {
+      console.log('=== MARKING VACCINATION AS COMPLETED ===');
+      console.log('Vaccination ID:', vaccinationId);
+      console.log('New next due date:', newNextDueDate);
+      console.log('User email:', userEmail);
+
+      const todayDate = new Date().toISOString().split('T')[0];
+      console.log('Today date:', todayDate);
+
       const { data, error } = await supabase
         .from('vaccinations')
         .update({
-          date_given: new Date().toISOString().split('T')[0],
+          date_given: todayDate,
           next_due_date: newNextDueDate,
         })
         .eq('id', vaccinationId)
@@ -412,7 +421,12 @@ export const useSupabaseData = (userEmail: string | null) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Supabase update successful:', data);
 
       const updatedVaccination: Vaccination = {
         id: data.id,
@@ -425,9 +439,19 @@ export const useSupabaseData = (userEmail: string | null) => {
         imageUrl: data.image_url,
       };
 
-      setVaccinations(prev => prev.map(vaccination => 
-        vaccination.id === vaccinationId ? updatedVaccination : vaccination
-      ));
+      console.log('Updated vaccination object:', updatedVaccination);
+
+      // Force state update
+      setVaccinations(prev => {
+        console.log('Previous vaccinations state:', prev);
+        const newState = prev.map(vaccination => 
+          vaccination.id === vaccinationId ? updatedVaccination : vaccination
+        );
+        console.log('New vaccinations state:', newState);
+        return newState;
+      });
+
+      console.log('=== VACCINATION UPDATE COMPLETED ===');
       return updatedVaccination;
     } catch (error) {
       console.error('Error marking vaccination as completed:', error);
