@@ -47,10 +47,10 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
       
     } catch (error) {
       console.error('Error getting location:', error);
-      setLocationError('Não foi possível obter sua localização. Verifique as permissões.');
+      setLocationError('Unable to get your location. Please check location permissions.');
       
-      // Fallback to default location (São Paulo) if location fails
-      await searchNearbyVets(-23.5505, -46.6333);
+      // Fallback to Miami location if location fails
+      await searchNearbyVets(25.7617, -80.1918); // Miami coordinates
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
   const getCurrentPosition = (): Promise<GeolocationPosition> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error('Geolocalização não é suportada neste navegador'));
+        reject(new Error('Geolocation is not supported by this browser'));
         return;
       }
 
@@ -78,40 +78,58 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
   const searchNearbyVets = async (lat: number, lng: number) => {
     try {
       // In a real implementation, you would use Google Places API or similar
-      // For now, I'll create a mock implementation that simulates real data
+      // For now, I'll create a mock implementation with Miami-area veterinarians
       
       // This would be your actual API call:
       // const response = await fetch(`/api/search-vets?lat=${lat}&lng=${lng}`);
       // const data = await response.json();
       
-      // Mock data for demonstration (replace with real API)
+      // Mock data for Miami area demonstration (replace with real API)
       const mockClinics: VetClinic[] = [
         {
           id: '1',
-          name: 'Hospital Veterinário 24h',
-          address: 'Rua das Palmeiras, 123 - Centro',
-          phone: '(11) 99999-1111',
+          name: 'BluePearl Pet Hospital',
+          address: '2600 S University Dr, Davie, FL 33328',
+          phone: '(954) 473-4900',
           distance: 0.8,
           rating: 4.5,
           isOpen: true,
         },
         {
           id: '2',
-          name: 'Clínica Veterinária Pet Care',
-          address: 'Av. Principal, 456 - Jardim',
-          phone: '(11) 88888-2222',
+          name: 'VCA Hollywood Animal Hospital',
+          address: '920 N Federal Hwy, Hollywood, FL 33020',
+          phone: '(954) 920-3556',
           distance: 1.2,
           rating: 4.3,
           isOpen: true,
         },
         {
           id: '3',
-          name: 'VetMed Emergência',
-          address: 'Rua dos Animais, 789 - Vila Nova',
-          phone: '(11) 77777-3333',
+          name: 'Miami Emergency Veterinary Clinic',
+          address: '14790 Biscayne Blvd, North Miami Beach, FL 33181',
+          phone: '(305) 947-8387',
           distance: 2.1,
           rating: 4.7,
           isOpen: false,
+        },
+        {
+          id: '4',
+          name: 'Aventura Animal Hospital',
+          address: '20803 Biscayne Blvd, Aventura, FL 33180',
+          phone: '(305) 932-8389',
+          distance: 3.2,
+          rating: 4.6,
+          isOpen: true,
+        },
+        {
+          id: '5',
+          name: 'Coral Gables Veterinary Hospital',
+          address: '285 Aragon Ave, Coral Gables, FL 33134',
+          phone: '(305) 446-4811',
+          distance: 4.1,
+          rating: 4.4,
+          isOpen: true,
         },
       ];
 
@@ -121,7 +139,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
       
     } catch (error) {
       console.error('Error searching for vets:', error);
-      toast.error('Erro ao buscar veterinários próximos');
+      toast.error('Error searching for nearby veterinarians');
     }
   };
 
@@ -148,8 +166,8 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
   };
 
   const handleEmergencyCall = () => {
-    // In Brazil, you could also add veterinary emergency numbers
-    window.location.href = 'tel:190'; // Police (they can help with emergency vet info)
+    // US emergency number
+    window.location.href = 'tel:911';
   };
 
   if (!isOpen) return null;
@@ -162,7 +180,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle size={24} />
-              <h2 className="text-lg font-semibold">SOS Veterinário</h2>
+              <h2 className="text-lg font-semibold">Emergency Vet SOS</h2>
             </div>
             <button
               onClick={onClose}
@@ -172,7 +190,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
             </button>
           </div>
           <p className="text-sm mt-1 opacity-90">
-            Encontre veterinários de emergência próximos
+            Find emergency veterinarians near you
           </p>
         </div>
 
@@ -183,7 +201,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
             className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors"
           >
             <Phone size={20} />
-            Emergência: Ligar 190
+            Emergency: Call 911
           </button>
         </div>
 
@@ -192,7 +210,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="animate-spin mr-2" size={24} />
-              <span>Buscando veterinários próximos...</span>
+              <span>Finding nearby veterinarians...</span>
             </div>
           ) : locationError ? (
             <div className="text-center py-8">
@@ -202,18 +220,18 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                 onClick={getCurrentLocationAndSearch}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
-                Tentar Novamente
+                Try Again
               </button>
             </div>
           ) : clinics.length === 0 ? (
             <div className="text-center py-8">
               <MapPin className="mx-auto mb-2 text-gray-400" size={48} />
-              <p className="text-gray-600">Nenhum veterinário encontrado nas proximidades</p>
+              <p className="text-gray-600">No veterinarians found nearby</p>
             </div>
           ) : (
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-800 mb-3">
-                Veterinários próximos ({clinics.length})
+                Nearby Veterinarians ({clinics.length})
               </h3>
               
               {clinics.map((clinic) => (
@@ -229,7 +247,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                       <p className="text-sm text-gray-600">{clinic.address}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-sm text-gray-500">
-                          {clinic.distance} km • ⭐ {clinic.rating}
+                          {clinic.distance} mi • ⭐ {clinic.rating}
                         </span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
@@ -238,7 +256,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {clinic.isOpen ? 'Aberto' : 'Fechado'}
+                          {clinic.isOpen ? 'Open' : 'Closed'}
                         </span>
                       </div>
                     </div>
@@ -250,14 +268,14 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
                       className="flex-1 bg-green-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
                     >
                       <Phone size={16} />
-                      Ligar
+                      Call
                     </button>
                     <button
                       onClick={() => handleDirections(clinic.address)}
                       className="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
                     >
                       <Navigation size={16} />
-                      Rotas
+                      Directions
                     </button>
                   </div>
                 </div>
@@ -269,7 +287,7 @@ const EmergencyVetFinder: React.FC<EmergencyVetFinderProps> = ({ isOpen, onClose
         {/* Footer */}
         <div className="p-4 bg-gray-50 border-t">
           <p className="text-xs text-gray-500 text-center">
-            Em caso de emergência grave, procure o veterinário mais próximo imediatamente
+            For severe emergencies, seek immediate veterinary care or call 911
           </p>
         </div>
       </div>

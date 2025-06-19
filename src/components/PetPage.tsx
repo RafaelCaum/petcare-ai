@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Edit, Plus, Calendar, MapPin, Book } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -13,6 +14,7 @@ interface PetPageProps {
 
 const PetPage: React.FC<PetPageProps> = ({ pet, vaccinations, onEditPet, onAddVaccination }) => {
   const [activeSection, setActiveSection] = useState<'profile' | 'vaccinations' | 'directory'>('profile');
+  const [emergencyVetFinderOpen, setEmergencyVetFinderOpen] = useState(false);
 
   const calculateAge = (birthDate: string) => {
     const birth = new Date(birthDate);
@@ -224,12 +226,23 @@ const PetPage: React.FC<PetPageProps> = ({ pet, vaccinations, onEditPet, onAddVa
           <div className="pet-card bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
             <h3 className="text-lg font-semibold text-red-800 mb-3">🚨 Emergency SOS</h3>
             <p className="text-red-700 text-sm mb-4">
-              Em caso de emergência, encontre veterinários próximos à sua localização
+              In case of emergency, find veterinarians near your location
             </p>
-            <EmergencyVetFinder />
+            <button
+              onClick={() => setEmergencyVetFinderOpen(true)}
+              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            >
+              Find Emergency Vet
+            </button>
           </div>
         </div>
       )}
+
+      {/* Emergency Vet Finder Modal */}
+      <EmergencyVetFinder 
+        isOpen={emergencyVetFinderOpen} 
+        onClose={() => setEmergencyVetFinderOpen(false)} 
+      />
     </div>
   );
 };
