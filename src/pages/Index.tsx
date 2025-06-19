@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -42,9 +41,10 @@ const Index = () => {
     addVaccination 
   } = useSupabaseData(userEmail);
 
-  const handleLogin = (email: string, userData: any) => {
-    setUserEmail(email);
-    setCurrentUser(userData);
+  const handleLoginSuccess = () => {
+    // The EmailLogin component handles the authentication internally
+    // We just need to handle the success callback
+    console.log('Login successful');
   };
 
   const handleLogout = () => {
@@ -145,7 +145,7 @@ const Index = () => {
 
   // Show login if no user is logged in
   if (!userEmail) {
-    return <EmailLogin onLogin={handleLogin} />;
+    return <EmailLogin onSuccess={handleLoginSuccess} />;
   }
 
   // Show loading while fetching data
