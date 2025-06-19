@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Save, Camera, Upload } from 'lucide-react';
 import { Pet } from '../types/pet';
@@ -51,10 +50,12 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
       // If there's a new file and we're editing an existing pet, upload it
       if (selectedFile && pet?.id && onUploadPhoto) {
+        console.log('Uploading photo for pet:', pet.id);
         photoUrl = await onUploadPhoto(selectedFile, pet.id);
+        console.log('Photo upload result:', photoUrl);
       }
 
-      onSave({
+      const petData = {
         name: name.trim(),
         type,
         breed: breed.trim(),
@@ -64,7 +65,10 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         color: color.trim(),
         avatar: type === 'dog' ? '🐕' : '🐱',
         photoUrl: photoUrl || undefined
-      });
+      };
+
+      console.log('Saving pet data:', petData);
+      onSave(petData);
       onClose();
     } catch (error) {
       console.error('Error saving pet:', error);

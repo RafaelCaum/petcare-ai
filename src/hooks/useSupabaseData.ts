@@ -131,36 +131,55 @@ export const useSupabaseData = (userEmail: string | null) => {
   };
 
   const uploadPetPhoto = async (file: File, petId: string) => {
-    if (!userEmail) return null;
+    if (!userEmail) {
+      console.error('No user email available');
+      return null;
+    }
 
     try {
+      console.log('Starting photo upload for pet:', petId);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${petId}-${Date.now()}.${fileExt}`;
       const filePath = `${userEmail}/${fileName}`;
+
+      console.log('Uploading file to path:', filePath);
 
       const { error: uploadError } = await supabase.storage
         .from('pet-photos')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('pet-photos')
         .getPublicUrl(filePath);
 
-      // Update pet with photo URL
+      console.log('Generated public URL:', publicUrl);
+
+      // Update pet with photo URL in database
       const { error: updateError } = await supabase
         .from('pets')
         .update({ photo_url: publicUrl })
         .eq('id', petId)
         .eq('user_email', userEmail);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
 
-      // Update local state
+      console.log('Successfully updated pet photo URL in database');
+
+      // Update local state immediately
       setPets(prev => prev.map(pet => 
         pet.id === petId ? { ...pet, photoUrl: publicUrl } : pet
       ));
+
+      console.log('Updated local state with new photo URL');
 
       return publicUrl;
     } catch (error) {

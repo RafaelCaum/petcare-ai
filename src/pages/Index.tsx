@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -40,7 +41,8 @@ const Index = () => {
     updateUser, 
     addVaccination,
     deleteVaccination,
-    markVaccinationAsCompleted 
+    markVaccinationAsCompleted,
+    uploadPetPhoto 
   } = useSupabaseData(userEmail);
 
   const handleLogin = (email: string, userData: any) => {
@@ -259,6 +261,7 @@ const Index = () => {
           isOpen={editPetModalOpen}
           onClose={() => setEditPetModalOpen(false)}
           onSave={handleSavePet}
+          onUploadPhoto={uploadPetPhoto}
         />
 
         <AddVaccinationModal
