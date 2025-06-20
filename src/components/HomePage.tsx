@@ -78,7 +78,23 @@ const HomePage: React.FC<HomePageProps> = ({
   // Sort expenses by date
   const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // Get recent expenses (last 3)
+  // Get recent expenses (today's expenses only)
+  const today = new Date().toISOString().split('T')[0];
+  const todayExpenses = expenses.filter(expense => expense.date === today);
+  
+  // Get this month's total expenses
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  const thisMonthExpenses = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+  });
+
+  const monthlyTotal = thisMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  // Get recent expenses for display (last 3)
   const recentExpenses = sortedExpenses.slice(0, 3);
 
   // Get upcoming vaccination reminders with enhanced status
@@ -97,11 +113,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
   const handleMarkVaccinationCompleted = (vaccinationId: string) => {
     if (onMarkVaccinationCompleted) {
-      // Calculate next due date (1 year from today for most vaccines)
-      const nextYear = new Date();
-      nextYear.setFullYear(nextYear.getFullYear() + 1);
-      const nextDueDate = nextYear.toISOString().split('T')[0];
-      
       onMarkVaccinationCompleted(vaccinationId);
     }
     setSelectedVaccination(null);
@@ -146,11 +157,41 @@ const HomePage: React.FC<HomePageProps> = ({
         </div>
         <div className="pet-card text-center">
           <div className="text-2xl font-bold text-primary">
-            ${recentExpenses.reduce((sum, expense) => sum + expense.amount, 0).toFixed(0)}
+            ${monthlyTotal.toFixed(0)}
           </div>
           <div className="text-sm text-gray-600">This Month</div>
         </div>
       </div>
+
+      {/* Today's Summary */}
+      {todayExpenses.length > 0 && (
+        <div className="pet-card">
+          <h2 className="text-lg font-semibold mb-4 flex items-center">
+            <Calendar className="mr-2 text-primary" size={20} />
+            Today's Expenses
+          </h2>
+          <div className="space-y-3">
+            {todayExpenses.map((expense) => (
+              <div key={expense.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center">
+                  <Activity className="w-4 h-4 text-primary mr-3" />
+                  <div>
+                    <div className="font-medium">{expense.description}</div>
+                    <div className="text-sm text-gray-600 capitalize">{expense.category}</div>
+                  </div>
+                </div>
+                <div className="font-medium">${expense.amount.toFixed(2)}</div>
+              </div>
+            ))}
+            <div className="border-t pt-3 flex justify-between items-center">
+              <span className="font-semibold">Today's Total:</span>
+              <span className="font-bold text-primary">
+                ${todayExpenses.reduce((sum, expense) => sum + expense.amount, 0).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Upcoming Reminders */}
       <div className="pet-card">
@@ -187,17 +228,19 @@ const HomePage: React.FC<HomePageProps> = ({
           ))}
 
           {upcomingVaccinations.map((vaccination) => (
-            <div key={vaccination.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <Syringe className="w-4 h-4 text-primary mr-3" />
-                <div>
-                  <div className="font-medium">{vaccination.vaccineName}</div>
-                  <div className="text-sm text-gray-600">
-                    Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}
+            <div key={vaccination.id} className="flex flex-col space-y-2 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Syringe className="w-4 h-4 text-primary mr-3" />
+                  <div>
+                    <div className="font-medium">{vaccination.vaccineName}</div>
+                    <div className="text-sm text-gray-600">
+                      Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between">
                 <Button 
                   size="sm" 
                   variant={vaccination.statusInfo.variant}

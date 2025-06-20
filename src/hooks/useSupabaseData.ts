@@ -47,6 +47,7 @@ export const useSupabaseData = (userEmail: string | null) => {
           name: userData.name,
           email: userData.email,
           phone: userData.phone,
+          photoUrl: userData.photo_url,
           subscriptionStatus: userData.subscription_status as 'trial' | 'active' | 'cancelled' | 'expired',
           trialStartDate: userData.trial_start_date,
           subscriptionEndDate: userData.subscription_end_date,
@@ -215,6 +216,61 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
+  const uploadUserPhoto = async (file: File) => {
+    if (!userEmail) {
+      console.error('No user email available');
+      return null;
+    }
+
+    try {
+      console.log('Starting user photo upload');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `profile-${Date.now()}.${fileExt}`;
+      const filePath = `${userEmail}/${fileName}`;
+
+      console.log('Uploading file to path:', filePath);
+
+      const { error: uploadError } = await supabase.storage
+        .from('user-photos')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-photos')
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+
+      // Update user with photo URL in database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ photo_url: publicUrl })
+        .eq('email', userEmail);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated user photo URL in database');
+
+      // Update local state immediately
+      setUser(prev => prev ? { ...prev, photoUrl: publicUrl } : null);
+
+      console.log('Updated local state with new photo URL');
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading user photo:', error);
+      throw error;
+    }
+  };
+
   const addExpense = async (expense: Omit<Expense, 'id'>) => {
     if (!userEmail) return;
 
@@ -350,6 +406,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         .update({
           name: userData.name,
           phone: userData.phone,
+          photo_url: userData.photoUrl,
         })
         .eq('email', userEmail)
         .select()
@@ -500,6 +557,7 @@ export const useSupabaseData = (userEmail: string | null) => {
     deleteVaccination,
     markVaccinationAsCompleted,
     uploadPetPhoto,
+    uploadUserPhoto,
     refetch: fetchAllData,
   };
 };

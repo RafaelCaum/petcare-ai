@@ -1,3 +1,4 @@
+
 export interface Pet {
   id: string;
   name: string;
@@ -50,6 +51,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  photoUrl?: string;
   subscriptionStatus: 'trial' | 'active' | 'cancelled' | 'expired';
   trialStartDate: string;
   subscriptionEndDate?: string;

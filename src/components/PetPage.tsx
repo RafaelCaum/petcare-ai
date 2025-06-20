@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Edit, Plus, Calendar, MapPin, Book, Trash2 } from 'lucide-react';
+import { Edit, Plus, Calendar, MapPin, Book, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import PetAvatar from './PetAvatar';
 import EmergencyVetFinder from './EmergencyVetFinder';
 import { Pet, Vaccination } from '../types/pet';
@@ -17,15 +18,15 @@ import {
 import { Button } from './ui/button';
 
 interface PetPageProps {
-  pet: Pet | null;
+  pets: Pet[];
   vaccinations: Vaccination[];
-  onEditPet: () => void;
+  onEditPet: (pet?: Pet) => void;
   onAddVaccination: () => void;
   onDeleteVaccination?: (vaccinationId: string) => void;
 }
 
 const PetPage: React.FC<PetPageProps> = ({ 
-  pet, 
+  pets, 
   vaccinations, 
   onEditPet, 
   onAddVaccination, 
@@ -33,6 +34,9 @@ const PetPage: React.FC<PetPageProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<'profile' | 'vaccinations' | 'directory'>('profile');
   const [emergencyVetFinderOpen, setEmergencyVetFinderOpen] = useState(false);
+  const [currentPetIndex, setCurrentPetIndex] = useState(0);
+
+  const currentPet = pets[currentPetIndex];
 
   const calculateAge = (birthDate: string) => {
     const birth = new Date(birthDate);
@@ -58,7 +62,21 @@ const PetPage: React.FC<PetPageProps> = ({
     return { status: 'up to date', color: 'text-success' };
   };
 
-  if (!pet) {
+  const currentPetVaccinations = vaccinations.filter(v => v.petId === currentPet?.id);
+
+  const nextPet = () => {
+    if (currentPetIndex < pets.length - 1) {
+      setCurrentPetIndex(currentPetIndex + 1);
+    }
+  };
+
+  const prevPet = () => {
+    if (currentPetIndex > 0) {
+      setCurrentPetIndex(currentPetIndex - 1);
+    }
+  };
+
+  if (pets.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 pb-20">
         <div className="text-center">
@@ -66,7 +84,7 @@ const PetPage: React.FC<PetPageProps> = ({
           <h2 className="text-xl font-semibold mb-2">No Pet Profile</h2>
           <p className="text-gray-600 mb-4">Create your pet's profile to get started</p>
           <button
-            onClick={onEditPet}
+            onClick={() => onEditPet()}
             className="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition-colors"
           >
             Create Pet Profile
@@ -119,26 +137,60 @@ const PetPage: React.FC<PetPageProps> = ({
           <div className="pet-card">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Pet Profile</h2>
-              <button
-                onClick={onEditPet}
-                className="flex items-center text-primary hover:text-primary-dark transition-colors"
-              >
-                <Edit size={16} className="mr-1" />
-                Edit
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => onEditPet()}
+                  className="flex items-center text-primary hover:text-primary-dark transition-colors"
+                >
+                  <Plus size={16} className="mr-1" />
+                  Add Pet
+                </button>
+                {currentPet && (
+                  <button
+                    onClick={() => onEditPet(currentPet)}
+                    className="flex items-center text-primary hover:text-primary-dark transition-colors"
+                  >
+                    <Edit size={16} className="mr-1" />
+                    Edit
+                  </button>
+                )}
+              </div>
             </div>
             
+            {/* Pet Navigation */}
+            {pets.length > 1 && (
+              <div className="flex items-center justify-between mb-6">
+                <button
+                  onClick={prevPet}
+                  disabled={currentPetIndex === 0}
+                  className="p-2 rounded-full bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="text-sm text-gray-600">
+                  {currentPetIndex + 1} of {pets.length}
+                </span>
+                <button
+                  onClick={nextPet}
+                  disabled={currentPetIndex === pets.length - 1}
+                  className="p-2 rounded-full bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center space-x-4 mb-6">
               <PetAvatar 
-                petType={pet.type} 
-                petName={pet.name} 
+                petType={currentPet.type} 
+                petName={currentPet.name} 
                 size="lg" 
-                photoUrl={pet.photoUrl}
+                photoUrl={currentPet.photoUrl}
               />
               <div>
-                <h3 className="text-xl font-bold">{pet.name}</h3>
-                <p className="text-gray-600 capitalize">{pet.type} • {pet.breed}</p>
-                <p className="text-sm text-gray-500">{calculateAge(pet.birthDate)} old</p>
+                <h3 className="text-xl font-bold">{currentPet.name}</h3>
+                <p className="text-gray-600 capitalize">{currentPet.type} • {currentPet.breed}</p>
+                <p className="text-sm text-gray-500">{calculateAge(currentPet.birthDate)} old</p>
               </div>
             </div>
 
@@ -146,7 +198,7 @@ const PetPage: React.FC<PetPageProps> = ({
               <div className="bg-gray-50 rounded-xl p-3">
                 <div className="text-sm text-gray-600">Birthday</div>
                 <div className="font-medium">
-                  {new Date(pet.birthDate).toLocaleDateString('en-US', {
+                  {new Date(currentPet.birthDate).toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
                     year: 'numeric'
@@ -155,15 +207,15 @@ const PetPage: React.FC<PetPageProps> = ({
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <div className="text-sm text-gray-600">Gender</div>
-                <div className="font-medium capitalize">{pet.gender || 'Not specified'}</div>
+                <div className="font-medium capitalize">{currentPet.gender || 'Not specified'}</div>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <div className="text-sm text-gray-600">Weight</div>
-                <div className="font-medium">{pet.weight ? `${pet.weight} lbs` : 'Not specified'}</div>
+                <div className="font-medium">{currentPet.weight ? `${currentPet.weight} lbs` : 'Not specified'}</div>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <div className="text-sm text-gray-600">Color</div>
-                <div className="font-medium">{pet.color || 'Not specified'}</div>
+                <div className="font-medium">{currentPet.color || 'Not specified'}</div>
               </div>
             </div>
           </div>
@@ -188,9 +240,9 @@ const PetPage: React.FC<PetPageProps> = ({
               </button>
             </div>
 
-            {vaccinations.length > 0 ? (
+            {currentPetVaccinations.length > 0 ? (
               <div className="space-y-4">
-                {vaccinations.map((vaccination) => {
+                {currentPetVaccinations.map((vaccination) => {
                   const status = getVaccinationStatus(vaccination);
                   return (
                     <div key={vaccination.id} className="border border-gray-200 rounded-xl p-4">
@@ -267,7 +319,7 @@ const PetPage: React.FC<PetPageProps> = ({
               </p>
               <div className="bg-accent/20 border border-accent/30 rounded-xl p-4">
                 <p className="text-sm text-accent-foreground">
-                  🚀 Coming Soon in Premium Plan
+                  🚀 Coming Soon - Feature in Development
                 </p>
               </div>
             </div>

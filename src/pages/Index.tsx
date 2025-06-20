@@ -43,11 +43,9 @@ const Index = () => {
     deleteVaccination,
     markVaccinationAsCompleted,
     uploadPetPhoto,
+    uploadUserPhoto,
     refetch
   } = useSupabaseData(userEmail);
-
-  // Remove the problematic useEffect that was causing infinite loading
-  // Instead, we'll refetch only when explicitly needed
 
   const handleLogin = (email: string, userData: any) => {
     console.log('Login successful for:', email);
@@ -78,7 +76,7 @@ const Index = () => {
     setAddExpenseModalOpen(true);
   };
 
-  const handleEditPet = () => {
+  const handleEditPet = (pet?: any) => {
     setEditPetModalOpen(true);
   };
 
@@ -189,7 +187,7 @@ const Index = () => {
     return <EmailLogin onLogin={handleLogin} />;
   }
 
-  // Show loading while fetching data - add timeout protection
+  // Show loading while fetching data
   if (loading) {
     console.log('Loading state - showing splash screen');
     return <SplashScreen isVisible={true} />;
@@ -229,7 +227,7 @@ const Index = () => {
         console.log('Rendering PetPage with pets:', pets, 'vaccinations:', vaccinations);
         return (
           <PetPage
-            pet={currentPet}
+            pets={pets}
             vaccinations={vaccinations}
             onEditPet={handleEditPet}
             onAddVaccination={handleAddVaccination}
@@ -274,6 +272,7 @@ const Index = () => {
           isOpen={editProfileModalOpen}
           onClose={() => setEditProfileModalOpen(false)}
           onSave={handleSaveProfile}
+          onUploadPhoto={uploadUserPhoto}
         />
 
         <EditPetModal

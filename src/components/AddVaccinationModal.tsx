@@ -12,6 +12,7 @@ interface AddVaccinationModalProps {
 
 const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen, onClose, onSave }) => {
   const [vaccineName, setVaccineName] = useState('');
+  const [customVaccineName, setCustomVaccineName] = useState('');
   const [dateGiven, setDateGiven] = useState('');
   const [nextDueDate, setNextDueDate] = useState('');
   const [veterinarian, setVeterinarian] = useState('');
@@ -25,15 +26,19 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
     'Leishmaniasis',
     'FVRCP (Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia)',
     'Feline Rabies',
-    'FeLV (Feline Leukemia)'
+    'FeLV (Feline Leukemia)',
+    'Bordetella',
+    'Lyme Disease',
+    'Leptospirosis'
   ];
 
   const handleSave = () => {
-    if (!vaccineName.trim() || !dateGiven) return;
+    const finalVaccineName = vaccineName === 'custom' ? customVaccineName.trim() : vaccineName;
+    if (!finalVaccineName || !dateGiven) return;
 
     onSave({
       petId,
-      vaccineName: vaccineName.trim(),
+      vaccineName: finalVaccineName,
       dateGiven,
       nextDueDate: nextDueDate || '',
       veterinarian: veterinarian.trim(),
@@ -43,6 +48,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
 
     // Reset form
     setVaccineName('');
+    setCustomVaccineName('');
     setDateGiven('');
     setNextDueDate('');
     setVeterinarian('');
@@ -80,16 +86,17 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
               {commonVaccines.map(vaccine => (
                 <option key={vaccine} value={vaccine}>{vaccine}</option>
               ))}
-              <option value="custom">Other (type below)</option>
+              <option value="custom">Other (Custom Vaccine)</option>
             </select>
             
             {vaccineName === 'custom' && (
               <input
                 type="text"
-                value=""
-                onChange={(e) => setVaccineName(e.target.value)}
+                value={customVaccineName}
+                onChange={(e) => setCustomVaccineName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mt-2"
-                placeholder="Enter vaccine name"
+                placeholder="Enter custom vaccine name"
+                required
               />
             )}
           </div>
@@ -155,7 +162,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
           </button>
           <button
             onClick={handleSave}
-            disabled={!vaccineName.trim() || !dateGiven}
+            disabled={(!vaccineName || (vaccineName === 'custom' && !customVaccineName.trim())) || !dateGiven}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
