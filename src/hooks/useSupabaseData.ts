@@ -401,13 +401,14 @@ export const useSupabaseData = (userEmail: string | null) => {
     if (!userEmail) return;
 
     try {
+      const updateData: any = {};
+      if (userData.name !== undefined) updateData.name = userData.name;
+      if (userData.phone !== undefined) updateData.phone = userData.phone;
+      if (userData.photoUrl !== undefined) updateData.photo_url = userData.photoUrl;
+
       const { data, error } = await supabase
         .from('users')
-        .update({
-          name: userData.name,
-          phone: userData.phone,
-          photo_url: userData.photoUrl,
-        })
+        .update(updateData)
         .eq('email', userEmail)
         .select()
         .single();
