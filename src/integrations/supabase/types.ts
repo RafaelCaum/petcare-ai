@@ -189,6 +189,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          photo_url: string | null
           subscription_end_date: string | null
           subscription_status: string
           trial_start_date: string
@@ -200,6 +201,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          photo_url?: string | null
           subscription_end_date?: string | null
           subscription_status?: string
           trial_start_date?: string
@@ -211,6 +213,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          photo_url?: string | null
           subscription_end_date?: string | null
           subscription_status?: string
           trial_start_date?: string
