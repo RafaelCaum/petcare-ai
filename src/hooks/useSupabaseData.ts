@@ -42,15 +42,16 @@ export const useSupabaseData = (userEmail: string | null) => {
         console.error('Error fetching user:', userError);
       } else if (userData) {
         console.log('User data fetched successfully:', userData);
+        const userDataWithPhoto = userData as any; // Type assertion to handle photo_url
         setUser({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          photoUrl: userData.photo_url,
-          subscriptionStatus: userData.subscription_status as 'trial' | 'active' | 'cancelled' | 'expired',
-          trialStartDate: userData.trial_start_date,
-          subscriptionEndDate: userData.subscription_end_date,
+          id: userDataWithPhoto.id,
+          name: userDataWithPhoto.name,
+          email: userDataWithPhoto.email,
+          phone: userDataWithPhoto.phone,
+          photoUrl: userDataWithPhoto.photo_url,
+          subscriptionStatus: userDataWithPhoto.subscription_status as 'trial' | 'active' | 'cancelled' | 'expired',
+          trialStartDate: userDataWithPhoto.trial_start_date,
+          subscriptionEndDate: userDataWithPhoto.subscription_end_date,
         });
       }
 
@@ -246,10 +247,10 @@ export const useSupabaseData = (userEmail: string | null) => {
 
       console.log('Generated public URL:', publicUrl);
 
-      // Update user with photo URL in database
+      // Update user with photo URL in database using type assertion
       const { error: updateError } = await supabase
         .from('users')
-        .update({ photo_url: publicUrl })
+        .update({ photo_url: publicUrl } as any)
         .eq('email', userEmail);
 
       if (updateError) {
