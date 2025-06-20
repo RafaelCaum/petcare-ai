@@ -1,6 +1,21 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
+
+// Extend the Supabase user type to include photo_url
+type UserWithPhoto = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  photo_url: string | null;
+  subscription_status: string;
+  trial_start_date: string;
+  subscription_end_date: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export const useSupabaseData = (userEmail: string | null) => {
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +57,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         console.error('Error fetching user:', userError);
       } else if (userData) {
         console.log('User data fetched successfully:', userData);
-        const userDataWithPhoto = userData as any; // Type assertion to handle photo_url
+        const userDataWithPhoto = userData as UserWithPhoto;
         setUser({
           id: userDataWithPhoto.id,
           name: userDataWithPhoto.name,
@@ -247,10 +262,10 @@ export const useSupabaseData = (userEmail: string | null) => {
 
       console.log('Generated public URL:', publicUrl);
 
-      // Update user with photo URL in database using type assertion
+      // Update user with photo URL in database
       const { error: updateError } = await supabase
         .from('users')
-        .update({ photo_url: publicUrl } as any)
+        .update({ photo_url: publicUrl } as { photo_url: string })
         .eq('email', userEmail);
 
       if (updateError) {
@@ -402,7 +417,7 @@ export const useSupabaseData = (userEmail: string | null) => {
     if (!userEmail) return;
 
     try {
-      const updateData: any = {};
+      const updateData: { name?: string; phone?: string; photo_url?: string } = {};
       if (userData.name !== undefined) updateData.name = userData.name;
       if (userData.phone !== undefined) updateData.phone = userData.phone;
       if (userData.photoUrl !== undefined) updateData.photo_url = userData.photoUrl;
