@@ -2,6 +2,7 @@
 import React from 'react';
 import { User, Crown, Calendar, CreditCard, Settings, LogOut, Star } from 'lucide-react';
 import { User as UserType } from '../types/pet';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 interface ProfilePageProps {
   user: UserType | null;
@@ -27,26 +28,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
     trial: {
       status: 'Free Trial',
       description: `${trialDaysLeft} days remaining`,
-      color: 'text-warning',
-      bgColor: 'bg-warning/10 border-warning/20'
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50 border-yellow-200'
     },
     active: {
       status: 'Premium Member',
       description: 'All features unlocked',
-      color: 'text-success',
-      bgColor: 'bg-success/10 border-success/20'
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 border-green-200'
     },
     cancelled: {
       status: 'Cancelled',
       description: 'Subscription will end soon',
-      color: 'text-danger',
-      bgColor: 'bg-danger/10 border-danger/20'
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 border-red-200'
     },
     expired: {
       status: 'Expired',
       description: 'Upgrade to continue using premium features',
-      color: 'text-danger',
-      bgColor: 'bg-danger/10 border-danger/20'
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 border-red-200'
     }
   };
 
@@ -55,47 +56,61 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       {/* User Profile Header */}
-      <div className="pet-card bg-gradient-to-br from-primary to-primary-dark text-white">
+      <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-6">
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-            <User size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{user?.name || 'Pet Parent'}</h1>
-            <p className="text-primary-foreground/80">{user?.email}</p>
+          <Avatar className="w-20 h-20 border-4 border-white/20">
+            <AvatarImage 
+              src={user?.photoUrl || ''} 
+              alt={user?.name || 'Profile'} 
+            />
+            <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-white truncate">
+              {user?.name || 'Pet Parent'}
+            </h1>
+            <p className="text-blue-100 text-sm truncate">
+              {user?.email}
+            </p>
             {user?.phone && (
-              <p className="text-primary-foreground/80 text-sm">{user.phone}</p>
+              <p className="text-blue-100 text-sm truncate">
+                {user.phone}
+              </p>
             )}
           </div>
         </div>
       </div>
 
       {/* Subscription Status */}
-      <div className={`pet-card border-2 ${currentSubInfo.bgColor}`}>
+      <div className={`rounded-2xl p-6 border-2 ${currentSubInfo.bgColor}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <Crown className={`mr-2 ${currentSubInfo.color}`} size={20} />
-            <h2 className="font-semibold">Subscription Status</h2>
+            <h2 className="font-semibold text-gray-900">Subscription Status</h2>
           </div>
-          <span className={`text-sm font-medium ${currentSubInfo.color}`}>
+          <span className={`text-sm font-medium ${currentSubInfo.color} px-3 py-1 rounded-full bg-white/50`}>
             {currentSubInfo.status}
           </span>
         </div>
         
-        <p className="text-gray-600 mb-4">{currentSubInfo.description}</p>
+        <p className="text-gray-700 mb-4 text-sm">
+          {currentSubInfo.description}
+        </p>
         
         {user?.subscriptionStatus === 'trial' && trialDaysLeft <= 2 && (
-          <div className="bg-warning/20 border border-warning rounded-lg p-3 mb-4">
-            <p className="text-warning-dark text-sm font-medium">
+          <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-4">
+            <p className="text-yellow-800 text-sm font-medium">
               ⚠️ Trial ending soon! Upgrade to continue using Pet Care.
             </p>
           </div>
         )}
         
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={onManageSubscription}
-            className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center"
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium"
           >
             <CreditCard size={16} className="mr-2" />
             {user?.subscriptionStatus === 'trial' || user?.subscriptionStatus === 'expired' 
@@ -104,7 +119,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
             }
           </button>
           {user?.subscriptionStatus === 'active' && (
-            <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+            <button className="px-4 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
               <Star size={16} />
             </button>
           )}
@@ -112,31 +127,31 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
       </div>
 
       {/* Premium Features */}
-      <div className="pet-card">
-        <h2 className="font-semibold mb-4 flex items-center">
-          <Crown className="mr-2 text-accent" size={20} />
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-semibold mb-4 flex items-center text-gray-900">
+          <Crown className="mr-2 text-yellow-500" size={20} />
           Premium Features
         </h2>
         
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <span className="mr-3">📧</span>
-              <span>Email & SMS Reminders</span>
+            <div className="flex items-center flex-1 min-w-0">
+              <span className="mr-3 text-lg">📧</span>
+              <span className="text-sm text-gray-700 truncate">Email & SMS Reminders</span>
             </div>
-            <span className="text-xs bg-success text-white px-2 py-1 rounded-full">
+            <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full whitespace-nowrap ml-2">
               Active
             </span>
           </div>
           
           <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <span className="mr-3">🏥</span>
-              <span>Vet Directory & Emergency SOS</span>
+            <div className="flex items-center flex-1 min-w-0">
+              <span className="mr-3 text-lg">🏥</span>
+              <span className="text-sm text-gray-700 truncate">Vet Directory & Emergency SOS</span>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${
+            <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2 ${
               user?.subscriptionStatus === 'active' 
-                ? 'bg-success text-white' 
+                ? 'bg-green-500 text-white' 
                 : 'bg-gray-200 text-gray-600'
             }`}>
               {user?.subscriptionStatus === 'active' ? 'Active' : 'Premium'}
@@ -144,13 +159,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
           </div>
           
           <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <span className="mr-3">🍽️</span>
-              <span>Healthy Food & Treats Section</span>
+            <div className="flex items-center flex-1 min-w-0">
+              <span className="mr-3 text-lg">🍽️</span>
+              <span className="text-sm text-gray-700 truncate">Healthy Food & Treats Section</span>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${
+            <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2 ${
               user?.subscriptionStatus === 'active' 
-                ? 'bg-success text-white' 
+                ? 'bg-green-500 text-white' 
                 : 'bg-gray-200 text-gray-600'
             }`}>
               {user?.subscriptionStatus === 'active' ? 'Active' : 'Premium'}
@@ -158,21 +173,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
           </div>
           
           <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <span className="mr-3">🎂</span>
-              <span>Birthday Celebrations & Offers</span>
+            <div className="flex items-center flex-1 min-w-0">
+              <span className="mr-3 text-lg">🎂</span>
+              <span className="text-sm text-gray-700 truncate">Birthday Celebrations & Offers</span>
             </div>
-            <span className="text-xs bg-success text-white px-2 py-1 rounded-full">
+            <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full whitespace-nowrap ml-2">
               Active
             </span>
           </div>
           
           <div className="flex items-center justify-between py-2">
-            <div className="flex items-center">
-              <span className="mr-3">🛡️</span>
-              <span>Pet Insurance Integration</span>
+            <div className="flex items-center flex-1 min-w-0">
+              <span className="mr-3 text-lg">🛡️</span>
+              <span className="text-sm text-gray-700 truncate">Pet Insurance Integration</span>
             </div>
-            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full whitespace-nowrap ml-2">
               Coming Soon
             </span>
           </div>
@@ -180,8 +195,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
       </div>
 
       {/* Account Settings */}
-      <div className="pet-card">
-        <h2 className="font-semibold mb-4 flex items-center">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-semibold mb-4 flex items-center text-gray-900">
           <Settings className="mr-2 text-gray-600" size={20} />
           Account Settings
         </h2>
@@ -191,25 +206,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
             onClick={onEditProfile}
             className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center"
           >
-            <User size={16} className="mr-3 text-gray-500" />
-            Edit Profile Information
+            <User size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+            <span className="text-gray-700">Edit Profile Information</span>
           </button>
           
           <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
-            <Calendar size={16} className="mr-3 text-gray-500" />
-            Notification Preferences
+            <Calendar size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+            <span className="text-gray-700">Notification Preferences</span>
           </button>
           
           <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
-            <CreditCard size={16} className="mr-3 text-gray-500" />
-            Payment Methods
+            <CreditCard size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+            <span className="text-gray-700">Payment Methods</span>
           </button>
         </div>
       </div>
 
       {/* Support & Info */}
-      <div className="pet-card">
-        <h2 className="font-semibold mb-4">Support & Information</h2>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-semibold mb-4 text-gray-900">Support & Information</h2>
         
         <div className="space-y-2 text-sm">
           <button className="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors text-gray-600">
@@ -228,10 +243,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
       </div>
 
       {/* Sign Out */}
-      <div className="pet-card">
-        <button className="w-full text-left p-3 hover:bg-red-50 rounded-lg transition-colors flex items-center text-danger">
-          <LogOut size={16} className="mr-3" />
-          Sign Out
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <button className="w-full text-left p-3 hover:bg-red-50 rounded-lg transition-colors flex items-center text-red-600">
+          <LogOut size={16} className="mr-3 flex-shrink-0" />
+          <span>Sign Out</span>
         </button>
       </div>
     </div>

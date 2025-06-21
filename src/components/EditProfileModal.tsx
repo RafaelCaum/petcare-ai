@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { X, Save, Camera, Upload } from 'lucide-react';
 import { User } from '../types/pet';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 interface EditProfileModalProps {
   user: User;
@@ -24,6 +25,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [photoPreview, setPhotoPreview] = useState<string | null>(user.photoUrl || null);
   const [uploading, setUploading] = useState(false);
 
+  // Reset state when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setName(user.name);
+      setPhone(user.phone || '');
+      setSelectedFile(null);
+      setPhotoPreview(user.photoUrl || null);
+      setUploading(false);
+    }
+  }, [isOpen, user]);
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -42,16 +54,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       let photoUrl = user.photoUrl;
 
-      // If there's a new file, upload it
+      // If there's a new file, upload it first
       if (selectedFile && onUploadPhoto) {
+        console.log('Uploading new photo...');
         photoUrl = await onUploadPhoto(selectedFile);
+        console.log('Photo uploaded successfully:', photoUrl);
       }
 
-      onSave({ 
+      // Save the user data including the new photo URL
+      const updatedUserData = { 
         name, 
         phone,
         photoUrl: photoUrl || undefined
-      });
+      };
+
+      console.log('Saving user data:', updatedUserData);
+      await onSave(updatedUserData);
       onClose();
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -76,33 +94,32 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* Photo Upload Section */}
           <div className="text-center">
             <div className="mb-4">
-              {photoPreview ? (
-                <div className="relative w-24 h-24 mx-auto">
-                  <img
-                    src={photoPreview}
-                    alt="Profile preview"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
-                  />
-                  <button
-                    onClick={() => {
-                      setPhotoPreview(null);
-                      setSelectedFile(null);
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-24 h-24 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
-                  <Camera size={32} className="text-gray-400" />
-                </div>
+              <Avatar className="w-24 h-24 mx-auto border-4 border-blue-200">
+                <AvatarImage 
+                  src={photoPreview || ''} 
+                  alt="Profile preview" 
+                />
+                <AvatarFallback className="bg-gray-100 text-gray-400">
+                  <Camera size={32} />
+                </AvatarFallback>
+              </Avatar>
+              
+              {photoPreview && (
+                <button
+                  onClick={() => {
+                    setPhotoPreview(null);
+                    setSelectedFile(null);
+                  }}
+                  className="mt-2 text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove Photo
+                </button>
               )}
             </div>
             
-            <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors">
+            <label className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
               <Upload size={16} className="mr-2" />
-              Add Photo
+              {photoPreview ? 'Change Photo' : 'Add Photo'}
               <input
                 type="file"
                 accept="image/*"
@@ -120,7 +137,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Your full name"
             />
           </div>
@@ -146,7 +163,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Your phone number"
             />
           </div>
@@ -162,7 +179,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           <button
             onClick={handleSave}
             disabled={uploading}
-            className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
             {uploading ? 'Saving...' : 'Save'}
