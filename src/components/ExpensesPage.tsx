@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, TrendingUp, Calendar, DollarSign, Filter, Trash2 } from 'lucide-react';
 import { Expense, Pet } from '../types/pet';

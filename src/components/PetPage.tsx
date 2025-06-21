@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Edit, Plus, Calendar, MapPin, Book, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -141,7 +142,7 @@ const PetPage: React.FC<PetPageProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => onEditPet()}
-                  className="flex items-center text-primary hover:text-primary-dark transition-colors"
+                  className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
                 >
                   <Plus size={16} className="mr-1" />
                   Add Pet
@@ -150,7 +151,7 @@ const PetPage: React.FC<PetPageProps> = ({
                   <>
                     <button
                       onClick={() => onEditPet(currentPet)}
-                      className="flex items-center text-primary hover:text-primary-dark transition-colors"
+                      className="flex items-center text-primary hover:text-primary-dark transition-colors text-sm"
                     >
                       <Edit size={16} className="mr-1" />
                       Edit
@@ -158,8 +159,9 @@ const PetPage: React.FC<PetPageProps> = ({
                     {onDeletePet && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                            <Trash2 size={16} />
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 size={16} className="mr-1" />
+                            Delete
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
