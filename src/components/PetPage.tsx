@@ -331,12 +331,21 @@ const PetPage: React.FC<PetPageProps> = ({
             <p className="text-red-700 text-sm mb-4">
               In case of emergency, find veterinarians near your location
             </p>
-            <button
-              onClick={() => setEmergencyVetFinderOpen(true)}
-              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors"
-            >
-              Find Emergency Vet
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => setEmergencyVetFinderOpen(true)}
+                className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              >
+                Find Emergency Vet
+              </button>
+              
+              {/* Support Contact */}
+              <div className="text-center text-sm text-red-700">
+                <p className="font-medium">Need help? Contact support:</p>
+                <p>📞 +1 754-215-1258</p>
+                <p>📧 support@petcareapp.info</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

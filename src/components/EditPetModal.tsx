@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { X, Save, Camera, Upload } from 'lucide-react';
 import { Pet } from '../types/pet';
 
@@ -17,16 +18,44 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
   onSave, 
   onUploadPhoto 
 }) => {
-  const [name, setName] = useState(pet?.name || '');
-  const [type, setType] = useState<'dog' | 'cat'>(pet?.type || 'dog');
-  const [breed, setBreed] = useState(pet?.breed || '');
-  const [birthDate, setBirthDate] = useState(pet?.birthDate || '');
-  const [gender, setGender] = useState<'male' | 'female'>(pet?.gender || 'male');
-  const [weight, setWeight] = useState(pet?.weight || 0);
-  const [color, setColor] = useState(pet?.color || '');
+  const [name, setName] = useState('');
+  const [type, setType] = useState<'dog' | 'cat'>('dog');
+  const [breed, setBreed] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [weight, setWeight] = useState(0);
+  const [color, setColor] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(pet?.photoUrl || null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Reset form when modal opens/closes or pet changes
+  useEffect(() => {
+    if (isOpen) {
+      if (pet) {
+        // Editing existing pet
+        setName(pet.name || '');
+        setType(pet.type || 'dog');
+        setBreed(pet.breed || '');
+        setBirthDate(pet.birthDate || '');
+        setGender(pet.gender || 'male');
+        setWeight(pet.weight || 0);
+        setColor(pet.color || '');
+        setPhotoPreview(pet.photoUrl || null);
+      } else {
+        // Adding new pet - reset all fields
+        setName('');
+        setType('dog');
+        setBreed('');
+        setBirthDate('');
+        setGender('male');
+        setWeight(0);
+        setColor('');
+        setPhotoPreview(null);
+      }
+      setSelectedFile(null);
+    }
+  }, [isOpen, pet]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -84,7 +113,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
       <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">
-            {pet ? 'Editar Pet' : 'Adicionar Pet'}
+            {pet ? 'Edit Pet' : 'Add Pet'}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />
@@ -121,7 +150,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
             
             <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors">
               <Upload size={16} className="mr-2" />
-              Adicionar Foto
+              Add Photo
               <input
                 type="file"
                 accept="image/*"
@@ -133,48 +162,48 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nome do Pet *
+              Pet Name *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Nome do seu pet"
+              placeholder="Your pet's name"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo *
+              Type *
             </label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as 'dog' | 'cat')}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="dog">Cachorro</option>
-              <option value="cat">Gato</option>
+              <option value="dog">Dog</option>
+              <option value="cat">Cat</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Raça
+              Breed
             </label>
             <input
               type="text"
               value={breed}
               onChange={(e) => setBreed(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Raça do pet"
+              placeholder="Pet breed"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data de Nascimento
+              Birth Date
             </label>
             <input
               type="date"
@@ -186,28 +215,28 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sexo
+              Gender
             </label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value as 'male' | 'female')}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="male">Macho</option>
-              <option value="female">Fêmea</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Peso (kg)
+              Weight (lbs)
             </label>
             <input
               type="number"
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Peso em kg"
+              placeholder="Weight in lbs"
               min="0"
               step="0.1"
             />
@@ -215,14 +244,14 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cor
+              Color
             </label>
             <input
               type="text"
               value={color}
               onChange={(e) => setColor(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Cor do pet"
+              placeholder="Pet color"
             />
           </div>
         </div>
@@ -232,7 +261,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={handleSave}
@@ -240,7 +269,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            {uploading ? 'Salvando...' : 'Salvar'}
+            {uploading ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

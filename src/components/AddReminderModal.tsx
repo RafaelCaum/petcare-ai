@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
 import { X, Save, Bell } from 'lucide-react';
-import { Reminder } from '../types/pet';
+import { Reminder, Pet } from '../types/pet';
 
 interface AddReminderModalProps {
-  petId: string;
+  pets: Pet[];
   isOpen: boolean;
   onClose: () => void;
   onSave: (reminder: Omit<Reminder, 'id'>) => void;
 }
 
-const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onClose, onSave }) => {
+const AddReminderModal: React.FC<AddReminderModalProps> = ({ pets, isOpen, onClose, onSave }) => {
+  const [petId, setPetId] = useState(pets.length > 0 ? pets[0].id : '');
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'vaccine' | 'vet' | 'grooming' | 'bath' | 'medication' | 'other'>('vet');
   const [date, setDate] = useState('');
@@ -29,7 +30,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
   ];
 
   const handleSave = () => {
-    if (!title.trim() || !date || !time) return;
+    if (!title.trim() || !date || !time || !petId) return;
 
     onSave({
       petId,
@@ -44,6 +45,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
     });
 
     // Reset form
+    setPetId(pets.length > 0 ? pets[0].id : '');
     setTitle('');
     setType('vet');
     setDate('');
@@ -70,6 +72,23 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
         </div>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pet *
+            </label>
+            <select
+              value={petId}
+              onChange={(e) => setPetId(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {pets.map(pet => (
+                <option key={pet.id} value={pet.id}>
+                  {pet.name} ({pet.type})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Title *
@@ -178,7 +197,7 @@ const AddReminderModal: React.FC<AddReminderModalProps> = ({ petId, isOpen, onCl
           </button>
           <button
             onClick={handleSave}
-            disabled={!title.trim() || !date || !time}
+            disabled={!title.trim() || !date || !time || !petId}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />

@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
 import { Plus, TrendingUp, Calendar, DollarSign, Filter } from 'lucide-react';
-import { Expense } from '../types/pet';
+import { Expense, Pet } from '../types/pet';
 
 interface ExpensesPageProps {
   expenses: Expense[];
+  pets: Pet[];
   onAddExpense: () => void;
 }
 
-const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) => {
+const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpense }) => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -23,6 +24,11 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) =
     { id: 'medication', label: 'Medication', icon: '💊' },
     { id: 'other', label: 'Other', icon: '📋' }
   ];
+
+  const getPetName = (petId: string) => {
+    const pet = pets.find(p => p.id === petId);
+    return pet ? pet.name : 'Unknown Pet';
+  };
 
   const filteredExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date);
@@ -50,7 +56,7 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) =
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Gerar anos de 2025 em diante
+  // Generate years from 2025 onwards
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear + i);
 
@@ -193,7 +199,7 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, onAddExpense }) =
                         <div>
                           <div className="font-medium text-green-900">{expense.description}</div>
                           <div className="text-sm text-green-600">
-                            {formatDate(expense.date)} • {category?.label}
+                            {formatDate(expense.date)} • {category?.label} • {getPetName(expense.petId)}
                           </div>
                           {expense.notes && (
                             <div className="text-xs text-green-500 mt-1">{expense.notes}</div>

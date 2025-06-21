@@ -18,7 +18,7 @@ import {
 } from './ui/alert-dialog';
 
 interface HomePageProps {
-  pet: Pet;
+  pets: Pet[];
   reminders: Reminder[];
   expenses: Expense[];
   vaccinations: Vaccination[];
@@ -28,7 +28,7 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ 
-  pet, 
+  pets, 
   reminders, 
   expenses, 
   vaccinations, 
@@ -63,6 +63,11 @@ const HomePage: React.FC<HomePageProps> = ({
       variant: 'outline' as const,
       text: `Due in ${daysDiff} days`
     };
+  };
+
+  const getPetName = (petId: string) => {
+    const pet = pets.find(p => p.id === petId);
+    return pet ? pet.name : 'Unknown Pet';
   };
 
   // Sort reminders by date and time
@@ -118,6 +123,30 @@ const HomePage: React.FC<HomePageProps> = ({
     setSelectedVaccination(null);
   };
 
+  // Show default message if no pets
+  if (pets.length === 0) {
+    return (
+      <div className="space-y-6 pb-20 animate-fade-in">
+        {/* Logo */}
+        <div className="text-center py-6">
+          <img 
+            src="/lovable-uploads/37225868-33f4-46a9-a18a-13e3f2174f41.png" 
+            alt="PetCare AI - Two cute dogs"
+            className="w-32 h-32 mx-auto rounded-2xl shadow-gentle object-cover"
+          />
+        </div>
+
+        <div className="text-center py-8">
+          <div className="text-6xl mb-4">🐾</div>
+          <h2 className="text-xl font-semibold mb-2">Welcome to PetCare AI</h2>
+          <p className="text-gray-600 mb-4">Add your first pet to get started</p>
+        </div>
+      </div>
+    );
+  }
+
+  const primaryPet = pets[0];
+
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       {/* Logo */}
@@ -133,14 +162,19 @@ const HomePage: React.FC<HomePageProps> = ({
       <div className="pet-card">
         <div className="flex items-center space-x-4">
           <PetAvatar 
-            petType={pet.type} 
-            petName={pet.name} 
+            petType={primaryPet.type} 
+            petName={primaryPet.name} 
             size="lg" 
-            photoUrl={pet.photoUrl}
+            photoUrl={primaryPet.photoUrl}
           />
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">Hello, {pet.name}! 👋</h1>
-            <p className="text-gray-600">How's your furry friend today?</p>
+            <h1 className="text-2xl font-bold">Hello, {primaryPet.name}! 👋</h1>
+            <p className="text-gray-600">
+              {pets.length === 1 
+                ? "How's your furry friend today?" 
+                : `Managing ${pets.length} pets`
+              }
+            </p>
           </div>
         </div>
       </div>
@@ -177,7 +211,9 @@ const HomePage: React.FC<HomePageProps> = ({
                   <Activity className="w-4 h-4 text-primary mr-3" />
                   <div>
                     <div className="font-medium">{expense.description}</div>
-                    <div className="text-sm text-gray-600 capitalize">{expense.category}</div>
+                    <div className="text-sm text-gray-600 capitalize">
+                      {expense.category} • {getPetName(expense.petId)}
+                    </div>
                   </div>
                 </div>
                 <div className="font-medium">${expense.amount.toFixed(2)}</div>
@@ -217,7 +253,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="font-medium">{reminder.title}</div>
                   <div className="text-sm text-gray-600">
-                    {new Date(reminder.date).toLocaleDateString()} at {reminder.time}
+                    {new Date(reminder.date).toLocaleDateString()} at {reminder.time} • {getPetName(reminder.petId)}
                   </div>
                 </div>
               </div>
@@ -235,7 +271,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   <div>
                     <div className="font-medium">{vaccination.vaccineName}</div>
                     <div className="text-sm text-gray-600">
-                      Due: {new Date(vaccination.nextDueDate).toLocaleDateString()}
+                      Due: {new Date(vaccination.nextDueDate).toLocaleDateString()} • {getPetName(vaccination.petId)}
                     </div>
                   </div>
                 </div>
@@ -314,7 +350,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="font-medium">{expense.description}</div>
                   <div className="text-sm text-gray-600">
-                    {new Date(expense.date).toLocaleDateString()}
+                    {new Date(expense.date).toLocaleDateString()} • {getPetName(expense.petId)}
                   </div>
                 </div>
               </div>

@@ -13,13 +13,14 @@ import AddVaccinationModal from '../components/AddVaccinationModal';
 import AddReminderModal from '../components/AddReminderModal';
 import AddExpenseModal from '../components/AddExpenseModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
-import { User } from '../types/pet';
+import { User, Pet } from '../types/pet';
 import { toast } from 'sonner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [selectedPetForModal, setSelectedPetForModal] = useState<Pet | undefined>(undefined);
   
   // Modal states
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
@@ -76,7 +77,8 @@ const Index = () => {
     setAddExpenseModalOpen(true);
   };
 
-  const handleEditPet = (pet?: any) => {
+  const handleEditPet = (pet?: Pet) => {
+    setSelectedPetForModal(pet);
     setEditPetModalOpen(true);
   };
 
@@ -108,6 +110,7 @@ const Index = () => {
   const handleSavePet = async (petData: any) => {
     try {
       await addPet(petData);
+      setSelectedPetForModal(undefined);
       toast.success('Pet added successfully!');
     } catch (error) {
       toast.error('Error adding pet');
@@ -116,11 +119,8 @@ const Index = () => {
 
   const handleSaveVaccination = async (vaccinationData: any) => {
     try {
-      const currentPet = pets[0];
-      if (currentPet) {
-        await addVaccination({ ...vaccinationData, petId: currentPet.id });
-        toast.success('Vaccination added successfully!');
-      }
+      await addVaccination(vaccinationData);
+      toast.success('Vaccination added successfully!');
     } catch (error) {
       toast.error('Error adding vaccination');
     }
@@ -128,11 +128,8 @@ const Index = () => {
 
   const handleSaveReminder = async (reminderData: any) => {
     try {
-      const currentPet = pets[0];
-      if (currentPet) {
-        await addReminder({ ...reminderData, petId: currentPet.id });
-        toast.success('Reminder added successfully!');
-      }
+      await addReminder(reminderData);
+      toast.success('Reminder added successfully!');
     } catch (error) {
       toast.error('Error adding reminder');
     }
@@ -140,11 +137,8 @@ const Index = () => {
 
   const handleSaveExpense = async (expenseData: any) => {
     try {
-      const currentPet = pets[0];
-      if (currentPet) {
-        await addExpense({ ...expenseData, petId: currentPet.id });
-        toast.success('Expense added successfully!');
-      }
+      await addExpense(expenseData);
+      toast.success('Expense added successfully!');
     } catch (error) {
       toast.error('Error adding expense');
     }
@@ -214,7 +208,7 @@ const Index = () => {
       case 'home':
         return (
           <HomePage
-            pet={currentPet}
+            pets={pets}
             reminders={reminders}
             expenses={expenses}
             vaccinations={vaccinations}
@@ -238,6 +232,7 @@ const Index = () => {
         return (
           <ExpensesPage
             expenses={expenses}
+            pets={pets}
             onAddExpense={handleAddExpense}
           />
         );
@@ -276,29 +271,32 @@ const Index = () => {
         />
 
         <EditPetModal
-          pet={pets.length > 0 ? pets[0] : undefined}
+          pet={selectedPetForModal}
           isOpen={editPetModalOpen}
-          onClose={() => setEditPetModalOpen(false)}
+          onClose={() => {
+            setEditPetModalOpen(false);
+            setSelectedPetForModal(undefined);
+          }}
           onSave={handleSavePet}
           onUploadPhoto={uploadPetPhoto}
         />
 
         <AddVaccinationModal
-          petId={currentPet.id}
+          pets={pets}
           isOpen={addVaccinationModalOpen}
           onClose={() => setAddVaccinationModalOpen(false)}
           onSave={handleSaveVaccination}
         />
 
         <AddReminderModal
-          petId={currentPet.id}
+          pets={pets}
           isOpen={addReminderModalOpen}
           onClose={() => setAddReminderModalOpen(false)}
           onSave={handleSaveReminder}
         />
 
         <AddExpenseModal
-          petId={currentPet.id}
+          pets={pets}
           isOpen={addExpenseModalOpen}
           onClose={() => setAddExpenseModalOpen(false)}
           onSave={handleSaveExpense}

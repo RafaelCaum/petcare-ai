@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
 import { X, Save, DollarSign } from 'lucide-react';
-import { Expense } from '../types/pet';
+import { Expense, Pet } from '../types/pet';
 
 interface AddExpenseModalProps {
-  petId: string;
+  pets: Pet[];
   isOpen: boolean;
   onClose: () => void;
   onSave: (expense: Omit<Expense, 'id'>) => void;
 }
 
-const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClose, onSave }) => {
+const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ pets, isOpen, onClose, onSave }) => {
+  const [petId, setPetId] = useState(pets.length > 0 ? pets[0].id : '');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<'grooming' | 'vet' | 'food' | 'toys' | 'supplies' | 'medication' | 'other'>('vet');
   const [description, setDescription] = useState('');
@@ -18,18 +19,18 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
   const [notes, setNotes] = useState('');
 
   const expenseCategories = [
-    { value: 'vet', label: 'Veterinário' },
-    { value: 'food', label: 'Alimentação' },
-    { value: 'grooming', label: 'Banho e Tosa' },
-    { value: 'medication', label: 'Medicamentos' },
-    { value: 'toys', label: 'Brinquedos' },
-    { value: 'supplies', label: 'Suprimentos' },
-    { value: 'other', label: 'Outros' }
+    { value: 'vet', label: 'Veterinary' },
+    { value: 'food', label: 'Food' },
+    { value: 'grooming', label: 'Grooming' },
+    { value: 'medication', label: 'Medication' },
+    { value: 'toys', label: 'Toys' },
+    { value: 'supplies', label: 'Supplies' },
+    { value: 'other', label: 'Other' }
   ];
 
   const handleSave = () => {
     const numericAmount = parseFloat(amount);
-    if (!description.trim() || !numericAmount || numericAmount <= 0) return;
+    if (!description.trim() || !numericAmount || numericAmount <= 0 || !petId) return;
 
     onSave({
       petId,
@@ -41,6 +42,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
     });
 
     // Reset form
+    setPetId(pets.length > 0 ? pets[0].id : '');
     setAmount('');
     setCategory('vet');
     setDescription('');
@@ -57,7 +59,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center">
             <DollarSign className="mr-2 text-primary" size={20} />
-            Adicionar Despesa
+            Add Expense
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />
@@ -67,16 +69,33 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Valor *
+              Pet *
+            </label>
+            <select
+              value={petId}
+              onChange={(e) => setPetId(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {pets.map(pet => (
+                <option key={pet.id} value={pet.id}>
+                  {pet.name} ({pet.type})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Amount *
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="0,00"
+                placeholder="0.00"
                 min="0"
                 step="0.01"
                 required
@@ -86,7 +105,7 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Categoria *
+              Category *
             </label>
             <select
               value={category}
@@ -103,21 +122,21 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descrição *
+              Description *
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Ex: Consulta de rotina"
+              placeholder="e.g., Routine checkup"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data
+              Date
             </label>
             <input
               type="date"
@@ -129,13 +148,13 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Observações
+              Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Observações sobre a despesa"
+              placeholder="Notes about the expense"
               rows={3}
             />
           </div>
@@ -146,15 +165,15 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ petId, isOpen, onClos
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={!description.trim() || !amount || parseFloat(amount) <= 0}
+            disabled={!description.trim() || !amount || parseFloat(amount) <= 0 || !petId}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            Salvar
+            Save
           </button>
         </div>
       </div>
