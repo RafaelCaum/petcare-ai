@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Edit, Plus, Calendar, MapPin, Book, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -23,6 +22,7 @@ interface PetPageProps {
   onEditPet: (pet?: Pet) => void;
   onAddVaccination: () => void;
   onDeleteVaccination?: (vaccinationId: string) => void;
+  onDeletePet?: (petId: string) => void;
 }
 
 const PetPage: React.FC<PetPageProps> = ({ 
@@ -30,7 +30,8 @@ const PetPage: React.FC<PetPageProps> = ({
   vaccinations, 
   onEditPet, 
   onAddVaccination, 
-  onDeleteVaccination 
+  onDeleteVaccination,
+  onDeletePet 
 }) => {
   const [activeSection, setActiveSection] = useState<'profile' | 'vaccinations' | 'directory'>('profile');
   const [emergencyVetFinderOpen, setEmergencyVetFinderOpen] = useState(false);
@@ -146,13 +147,41 @@ const PetPage: React.FC<PetPageProps> = ({
                   Add Pet
                 </button>
                 {currentPet && (
-                  <button
-                    onClick={() => onEditPet(currentPet)}
-                    className="flex items-center text-primary hover:text-primary-dark transition-colors"
-                  >
-                    <Edit size={16} className="mr-1" />
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      onClick={() => onEditPet(currentPet)}
+                      className="flex items-center text-primary hover:text-primary-dark transition-colors"
+                    >
+                      <Edit size={16} className="mr-1" />
+                      Edit
+                    </button>
+                    {onDeletePet && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 size={16} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Pet</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {currentPet.name}? This will also delete all associated vaccinations, reminders, and expenses. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onDeletePet(currentPet.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </>
                 )}
               </div>
             </div>

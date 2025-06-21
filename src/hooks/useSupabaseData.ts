@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
@@ -413,6 +412,68 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
+  const deletePet = async (petId: string) => {
+    if (!userEmail) return;
+
+    try {
+      // First delete all related data
+      await supabase
+        .from('vaccinations')
+        .delete()
+        .eq('pet_id', petId)
+        .eq('user_email', userEmail);
+
+      await supabase
+        .from('reminders')
+        .delete()
+        .eq('pet_id', petId)
+        .eq('user_email', userEmail);
+
+      await supabase
+        .from('expenses')
+        .delete()
+        .eq('pet_id', petId)
+        .eq('user_email', userEmail);
+
+      // Then delete the pet
+      const { error } = await supabase
+        .from('pets')
+        .delete()
+        .eq('id', petId)
+        .eq('user_email', userEmail);
+
+      if (error) throw error;
+
+      // Update local state
+      setPets(prev => prev.filter(pet => pet.id !== petId));
+      setVaccinations(prev => prev.filter(vaccination => vaccination.petId !== petId));
+      setReminders(prev => prev.filter(reminder => reminder.petId !== petId));
+      setExpenses(prev => prev.filter(expense => expense.petId !== petId));
+    } catch (error) {
+      console.error('Error deleting pet:', error);
+      throw error;
+    }
+  };
+
+  const deleteExpense = async (expenseId: string) => {
+    if (!userEmail) return;
+
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', expenseId)
+        .eq('user_email', userEmail);
+
+      if (error) throw error;
+
+      setExpenses(prev => prev.filter(expense => expense.id !== expenseId));
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      throw error;
+    }
+  };
+
   const updateUser = async (userData: Partial<User>) => {
     if (!userEmail) return;
 
@@ -569,6 +630,8 @@ export const useSupabaseData = (userEmail: string | null) => {
     addExpense,
     addReminder,
     addPet,
+    deletePet,
+    deleteExpense,
     updateUser,
     addVaccination,
     deleteVaccination,

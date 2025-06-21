@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -39,6 +38,8 @@ const Index = () => {
     addExpense, 
     addReminder, 
     addPet, 
+    deletePet,
+    deleteExpense,
     updateUser, 
     addVaccination,
     deleteVaccination,
@@ -153,6 +154,24 @@ const Index = () => {
     }
   };
 
+  const handleDeletePet = async (petId: string) => {
+    try {
+      await deletePet(petId);
+      toast.success('Pet deleted successfully!');
+    } catch (error) {
+      toast.error('Error deleting pet');
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    try {
+      await deleteExpense(expenseId);
+      toast.success('Expense deleted successfully!');
+    } catch (error) {
+      toast.error('Error deleting expense');
+    }
+  };
+
   const handleMarkVaccinationCompleted = async (vaccinationId: string) => {
     try {
       console.log('handleMarkVaccinationCompleted called with ID:', vaccinationId);
@@ -226,6 +245,7 @@ const Index = () => {
             onEditPet={handleEditPet}
             onAddVaccination={handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
+            onDeletePet={handleDeletePet}
           />
         );
       case 'expenses':
@@ -234,6 +254,7 @@ const Index = () => {
             expenses={expenses}
             pets={pets}
             onAddExpense={handleAddExpense}
+            onDeleteExpense={handleDeleteExpense}
           />
         );
       case 'profile':

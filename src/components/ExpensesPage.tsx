@@ -1,15 +1,27 @@
-
 import React, { useState } from 'react';
-import { Plus, TrendingUp, Calendar, DollarSign, Filter } from 'lucide-react';
+import { Plus, TrendingUp, Calendar, DollarSign, Filter, Trash2 } from 'lucide-react';
 import { Expense, Pet } from '../types/pet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import { Button } from './ui/button';
 
 interface ExpensesPageProps {
   expenses: Expense[];
   pets: Pet[];
   onAddExpense: () => void;
+  onDeleteExpense?: (expenseId: string) => void;
 }
 
-const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpense }) => {
+const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpense, onDeleteExpense }) => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -194,9 +206,9 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpens
                 return (
                   <div key={expense.id} className="expense-card">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center">
+                      <div className="flex items-center flex-1">
                         <span className="text-2xl mr-3">{category?.icon}</span>
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium text-green-900">{expense.description}</div>
                           <div className="text-sm text-green-600">
                             {formatDate(expense.date)} • {category?.label} • {getPetName(expense.petId)}
@@ -206,8 +218,36 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpens
                           )}
                         </div>
                       </div>
-                      <div className="text-lg font-bold text-green-700">
-                        ${expense.amount.toFixed(2)}
+                      <div className="flex items-center space-x-3">
+                        <div className="text-lg font-bold text-green-700">
+                          ${expense.amount.toFixed(2)}
+                        </div>
+                        {onDeleteExpense && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                <Trash2 size={16} />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Expense</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this expense "{expense.description}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => onDeleteExpense(expense.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
                   </div>
