@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
 import { X, Save, Syringe } from 'lucide-react';
-import { Vaccination } from '../types/pet';
+import { Vaccination, Pet } from '../types/pet';
 
 interface AddVaccinationModalProps {
-  petId: string;
+  pets: Pet[];
   isOpen: boolean;
   onClose: () => void;
   onSave: (vaccination: Omit<Vaccination, 'id'>) => void;
 }
 
-const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen, onClose, onSave }) => {
+const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen, onClose, onSave }) => {
+  const [petId, setPetId] = useState(pets.length > 0 ? pets[0].id : '');
   const [vaccineName, setVaccineName] = useState('');
   const [customVaccineName, setCustomVaccineName] = useState('');
   const [dateGiven, setDateGiven] = useState('');
@@ -34,7 +35,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
 
   const handleSave = () => {
     const finalVaccineName = vaccineName === 'custom' ? customVaccineName.trim() : vaccineName;
-    if (!finalVaccineName || !dateGiven) return;
+    if (!finalVaccineName || !dateGiven || !petId) return;
 
     onSave({
       petId,
@@ -47,6 +48,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
     });
 
     // Reset form
+    setPetId(pets.length > 0 ? pets[0].id : '');
     setVaccineName('');
     setCustomVaccineName('');
     setDateGiven('');
@@ -72,6 +74,24 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
         </div>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pet *
+            </label>
+            <select
+              value={petId}
+              onChange={(e) => setPetId(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            >
+              {pets.map(pet => (
+                <option key={pet.id} value={pet.id}>
+                  {pet.name} ({pet.type})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Vaccine Name *
@@ -162,7 +182,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ petId, isOpen
           </button>
           <button
             onClick={handleSave}
-            disabled={(!vaccineName || (vaccineName === 'custom' && !customVaccineName.trim())) || !dateGiven}
+            disabled={(!vaccineName || (vaccineName === 'custom' && !customVaccineName.trim())) || !dateGiven || !petId}
             className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
