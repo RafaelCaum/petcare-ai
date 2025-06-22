@@ -53,6 +53,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
 
   const currentSubInfo = user ? subscriptionInfo[user.subscriptionStatus] : subscriptionInfo.expired;
 
+  console.log('ProfilePage user data:', user);
+  console.log('User photoUrl:', user?.photoUrl);
+
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       {/* User Profile Header */}
@@ -201,23 +204,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
           Account Settings
         </h2>
         
-        <div className="space-y-2">
+        <div className="space-y-1">
           <button
             onClick={onEditProfile}
-            className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center"
+            className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center"
           >
             <User size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-            <span className="text-gray-700">Edit Profile Information</span>
+            <span className="text-gray-700 text-sm">Edit Profile Information</span>
           </button>
           
-          <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
+          <button className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
             <Calendar size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-            <span className="text-gray-700">Notification Preferences</span>
+            <span className="text-gray-700 text-sm">Notification Preferences</span>
           </button>
           
-          <button className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
+          <button className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center">
             <CreditCard size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-            <span className="text-gray-700">Payment Methods</span>
+            <span className="text-gray-700 text-sm">Payment Methods</span>
           </button>
         </div>
       </div>
@@ -226,17 +229,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h2 className="font-semibold mb-4 text-gray-900">Support & Information</h2>
         
-        <div className="space-y-2 text-sm">
-          <button className="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors text-gray-600">
+        <div className="space-y-1 text-sm">
+          <button className="w-full text-left p-3 hover:bg-gray-50 rounded transition-colors text-gray-600">
             Help & FAQ
           </button>
-          <button className="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors text-gray-600">
+          <button className="w-full text-left p-3 hover:bg-gray-50 rounded transition-colors text-gray-600">
             Contact Support
           </button>
-          <button className="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors text-gray-600">
+          <button className="w-full text-left p-3 hover:bg-gray-50 rounded transition-colors text-gray-600">
             Privacy Policy
           </button>
-          <button className="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors text-gray-600">
+          <button className="w-full text-left p-3 hover:bg-gray-50 rounded transition-colors text-gray-600">
             Terms of Service
           </button>
         </div>

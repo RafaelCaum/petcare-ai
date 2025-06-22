@@ -52,25 +52,32 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     try {
       setUploading(true);
 
-      let photoUrl = user.photoUrl;
+      let finalPhotoUrl = user.photoUrl;
 
       // If there's a new file, upload it first
       if (selectedFile && onUploadPhoto) {
         console.log('Uploading new photo...');
-        photoUrl = await onUploadPhoto(selectedFile);
-        console.log('Photo uploaded successfully:', photoUrl);
+        const uploadedUrl = await onUploadPhoto(selectedFile);
+        if (uploadedUrl) {
+          finalPhotoUrl = uploadedUrl;
+          console.log('Photo uploaded successfully:', uploadedUrl);
+        }
       }
 
       // Save the user data including the new photo URL
       const updatedUserData = { 
         name, 
         phone,
-        photoUrl: photoUrl || undefined
+        photoUrl: finalPhotoUrl
       };
 
       console.log('Saving user data:', updatedUserData);
       await onSave(updatedUserData);
-      onClose();
+      
+      // Force a small delay to ensure state update
+      setTimeout(() => {
+        onClose();
+      }, 100);
     } catch (error) {
       console.error('Error saving profile:', error);
     } finally {
