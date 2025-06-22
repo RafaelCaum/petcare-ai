@@ -52,7 +52,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     try {
       setUploading(true);
 
-      let finalPhotoUrl = user.photoUrl;
+      let finalPhotoUrl = photoPreview;
 
       // If there's a new file, upload it first
       if (selectedFile && onUploadPhoto) {
@@ -74,10 +74,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       console.log('Saving user data:', updatedUserData);
       await onSave(updatedUserData);
       
-      // Force a small delay to ensure state update
-      setTimeout(() => {
-        onClose();
-      }, 100);
+      // Close modal after successful save
+      onClose();
     } catch (error) {
       console.error('Error saving profile:', error);
     } finally {
@@ -105,6 +103,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 <AvatarImage 
                   src={photoPreview || ''} 
                   alt="Profile preview" 
+                  className="object-cover"
                 />
                 <AvatarFallback className="bg-gray-100 text-gray-400">
                   <Camera size={32} />
