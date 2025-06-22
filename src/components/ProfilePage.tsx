@@ -65,9 +65,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
             <AvatarImage 
               src={user?.photoUrl || ''} 
               alt={user?.name || 'Profile'} 
-              className="object-cover"
-              onLoad={() => console.log('Avatar image loaded successfully')}
-              onError={() => console.log('Avatar image failed to load')}
+              className="object-cover w-full h-full"
+              onLoad={() => console.log('Avatar image loaded successfully:', user?.photoUrl)}
+              onError={(e) => {
+                console.log('Avatar image failed to load:', user?.photoUrl);
+                console.log('Error event:', e);
+              }}
             />
             <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -207,29 +210,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
           Account Settings
         </h2>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           <button
             onClick={onEditProfile}
-            className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between"
+            className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between group"
           >
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <User size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-              <span className="text-gray-700 text-sm">Edit Profile</span>
+              <span className="text-gray-700 text-sm font-medium">Edit Profile</span>
             </div>
+            <div className="text-gray-400 group-hover:text-gray-600 transition-colors">›</div>
           </button>
           
-          <button className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between">
-            <div className="flex items-center">
-              <Calendar size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-              <span className="text-gray-700 text-sm">Notifications</span>
-            </div>
-          </button>
-          
-          <button className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between">
-            <div className="flex items-center">
+          <button 
+            onClick={onManageSubscription}
+            className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between group"
+          >
+            <div className="flex items-center min-w-0">
               <CreditCard size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-              <span className="text-gray-700 text-sm">Payment</span>
+              <span className="text-gray-700 text-sm font-medium">Manage Subscription</span>
             </div>
+            <div className="text-gray-400 group-hover:text-gray-600 transition-colors">›</div>
+          </button>
+          
+          <button className="w-full text-left p-4 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between group">
+            <div className="flex items-center min-w-0">
+              <Calendar size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+              <span className="text-gray-700 text-sm font-medium">Notifications</span>
+            </div>
+            <div className="text-gray-400 group-hover:text-gray-600 transition-colors">›</div>
           </button>
         </div>
       </div>
