@@ -230,18 +230,20 @@ const ExpensesPage: React.FC<ExpensesPageProps> = ({ expenses, pets, onAddExpens
                                 <Trash2 size={16} />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="bg-primary text-white border-primary">
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Expense</AlertDialogTitle>
-                                <AlertDialogDescription>
+                                <AlertDialogTitle className="text-white">Delete Expense</AlertDialogTitle>
+                                <AlertDialogDescription className="text-white/90">
                                   Are you sure you want to delete this expense "{expense.description}"? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+                                  Cancel
+                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => onDeleteExpense(expense.id)}
-                                  className="bg-red-600 hover:bg-red-700"
+                                  className="bg-white text-primary hover:bg-white/90"
                                 >
                                   Delete
                                 </AlertDialogAction>
