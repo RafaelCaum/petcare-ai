@@ -17,6 +17,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onEditProfile, onManage
   console.log('ProfilePage rendering with user:', user);
   console.log('User photoUrl:', user?.photoUrl);
 
+  if (!user) {
+    console.log('No user data available in ProfilePage');
+    return (
+      <div className="space-y-6 pb-20 animate-fade-in">
+        <div className="bg-gray-100 rounded-2xl p-6 text-center">
+          <p className="text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       <UserProfileHeader user={user} />
