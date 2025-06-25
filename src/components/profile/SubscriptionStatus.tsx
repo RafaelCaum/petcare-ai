@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Crown, CreditCard, Star } from 'lucide-react';
 import { User as UserType } from '../../types/pet';
+import { Crown, Calendar } from 'lucide-react';
 
 interface SubscriptionStatusProps {
   user: UserType | null;
@@ -9,89 +9,69 @@ interface SubscriptionStatusProps {
 }
 
 const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ user, onManageSubscription }) => {
-  const getTrialDaysLeft = () => {
-    if (!user || user.subscriptionStatus !== 'trial') return 0;
-    
-    const trialStart = new Date(user.trialStartDate);
-    const trialEnd = new Date(trialStart.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const today = new Date();
-    const daysLeft = Math.ceil((trialEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return Math.max(0, daysLeft);
-  };
+  if (!user) return null;
 
-  const trialDaysLeft = getTrialDaysLeft();
-
-  const subscriptionInfo = {
-    trial: {
-      status: 'Free Trial',
-      description: `${trialDaysLeft} days remaining`,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50 border-yellow-200'
-    },
-    active: {
-      status: 'Premium Member',
-      description: 'All features unlocked',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 border-green-200'
-    },
-    cancelled: {
-      status: 'Cancelled',
-      description: 'Subscription will end soon',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50 border-red-200'
-    },
-    expired: {
-      status: 'Expired',
-      description: 'Upgrade to continue using premium features',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50 border-red-200'
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'trial':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'expired':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const currentSubInfo = user ? subscriptionInfo[user.subscriptionStatus] : subscriptionInfo.expired;
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Ativo';
+      case 'trial':
+        return 'Período de Teste';
+      case 'expired':
+        return 'Expirado';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return 'Desconhecido';
+    }
+  };
 
   return (
-    <div className={`rounded-2xl p-6 border-2 ${currentSubInfo.bgColor}`}>
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <Crown className={`mr-2 ${currentSubInfo.color}`} size={20} />
-          <h2 className="font-semibold text-gray-900">Subscription Status</h2>
+        <div className="flex items-center space-x-3">
+          <Crown className="text-yellow-500" size={24} />
+          <h2 className="text-xl font-bold text-gray-800">Status da Assinatura</h2>
         </div>
-        <span className={`text-sm font-medium ${currentSubInfo.color} px-3 py-1 rounded-full bg-white/50`}>
-          {currentSubInfo.status}
+        <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(user.subscriptionStatus)}`}>
+          {getStatusText(user.subscriptionStatus)}
         </span>
       </div>
-      
-      <p className="text-gray-700 mb-4 text-sm">
-        {currentSubInfo.description}
-      </p>
-      
-      {user?.subscriptionStatus === 'trial' && trialDaysLeft <= 2 && (
-        <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-4">
-          <p className="text-yellow-800 text-sm font-medium">
-            ⚠️ Trial ending soon! Upgrade to continue using Pet Care.
-          </p>
+
+      <div className="space-y-4">
+        <div className="flex items-center text-gray-600">
+          <Calendar size={16} className="mr-3" />
+          <span>Início do período: {new Date(user.trialStartDate).toLocaleDateString('pt-BR')}</span>
         </div>
-      )}
-      
-      <div className="flex flex-col sm:flex-row gap-2">
-        <button
-          onClick={onManageSubscription}
-          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium"
-        >
-          <CreditCard size={16} className="mr-2" />
-          {user?.subscriptionStatus === 'trial' || user?.subscriptionStatus === 'expired' 
-            ? 'Upgrade to Premium' 
-            : 'Manage Subscription'
-          }
-        </button>
-        {user?.subscriptionStatus === 'active' && (
-          <button className="px-4 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
-            <Star size={16} />
-          </button>
+        
+        {user.subscriptionEndDate && (
+          <div className="flex items-center text-gray-600">
+            <Calendar size={16} className="mr-3" />
+            <span>Fim do período: {new Date(user.subscriptionEndDate).toLocaleDateString('pt-BR')}</span>
+          </div>
         )}
       </div>
+
+      <button
+        onClick={onManageSubscription}
+        className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+      >
+        Gerenciar Assinatura
+      </button>
     </div>
   );
 };

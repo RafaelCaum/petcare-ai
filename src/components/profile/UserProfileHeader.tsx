@@ -12,10 +12,10 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ user }) => {
   console.log('User photoUrl:', user?.photoUrl);
 
   return (
-    <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-6">
-      <div className="flex items-center space-x-4">
+    <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 mb-6">
+      <div className="flex items-center space-x-6">
         <div className="flex-shrink-0">
-          <Avatar className="w-20 h-20 border-4 border-white/20">
+          <Avatar className="w-24 h-24 border-4 border-white/20">
             {user?.photoUrl && (
               <AvatarImage 
                 src={user.photoUrl} 
@@ -28,21 +28,21 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ user }) => {
                 }}
               />
             )}
-            <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
+            <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-white mb-1">
+          <h1 className="text-3xl font-bold text-white mb-2">
             {user?.name || 'Tutor do Pet'}
           </h1>
-          <p className="text-blue-100 text-sm mb-1">
+          <p className="text-blue-100 text-base mb-2">
             {user?.email}
           </p>
           {user?.phone && (
-            <p className="text-blue-100 text-sm">
-              {user.phone}
+            <p className="text-blue-100 text-base">
+              📞 {user.phone}
             </p>
           )}
         </div>
