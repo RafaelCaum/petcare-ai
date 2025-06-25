@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Calendar, User, Syringe, FileText, Zap } from 'lucide-react';
 import { Pet } from '../types/pet';
@@ -24,7 +23,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
   const [veterinarian, setVeterinarian] = useState('');
   const [notes, setNotes] = useState('');
   const [zapierWebhook, setZapierWebhook] = useState('');
-  const [sendEmailConfirmation, setSendEmailConfirmation] = useState(false);
+  const [sendEmailConfirmation, setSendEmailConfirmation] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +55,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
     setVeterinarian('');
     setNotes('');
     setZapierWebhook('');
-    setSendEmailConfirmation(false);
+    setSendEmailConfirmation(true);
     onClose();
   };
 
