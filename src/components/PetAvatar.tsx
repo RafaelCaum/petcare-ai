@@ -1,28 +1,27 @@
 
 import React from 'react';
+import { Pet } from '../types/pet';
 
 interface PetAvatarProps {
-  petType: 'dog' | 'cat';
-  petName: string;
-  size?: 'sm' | 'md' | 'lg';
-  photoUrl?: string;
+  pet: Pet;
+  size?: 'small' | 'medium' | 'large';
 }
 
-const PetAvatar: React.FC<PetAvatarProps> = ({ petType, petName, size = 'md', photoUrl }) => {
+const PetAvatar: React.FC<PetAvatarProps> = ({ pet, size = 'medium' }) => {
   const sizeClasses = {
-    sm: 'w-8 h-8 text-lg',
-    md: 'w-12 h-12 text-2xl',
-    lg: 'w-16 h-16 text-3xl'
+    small: 'w-8 h-8 text-lg',
+    medium: 'w-12 h-12 text-2xl',
+    large: 'w-16 h-16 text-3xl'
   };
 
-  const defaultEmoji = petType === 'dog' ? '🐕' : '🐱';
+  const defaultEmoji = pet.type === 'dog' ? '🐕' : '🐱';
 
-  if (photoUrl) {
+  if (pet.photoUrl) {
     return (
       <div className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-200 flex-shrink-0`}>
         <img
-          src={photoUrl}
-          alt={petName}
+          src={pet.photoUrl}
+          alt={pet.name}
           className="w-full h-full object-cover"
         />
       </div>
