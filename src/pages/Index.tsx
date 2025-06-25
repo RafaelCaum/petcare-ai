@@ -120,10 +120,12 @@ const Index = () => {
 
   const handleSaveVaccination = async (vaccinationData: any) => {
     try {
+      console.log('Saving vaccination:', vaccinationData);
       await addVaccination(vaccinationData);
-      toast.success('Vaccination added successfully!');
+      // A mensagem de sucesso já é exibida na função addVaccination
     } catch (error) {
-      toast.error('Error adding vaccination');
+      console.error('Error in handleSaveVaccination:', error);
+      // A mensagem de erro já é exibida na função addVaccination
     }
   };
 

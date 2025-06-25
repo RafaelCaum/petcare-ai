@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
+import { toast } from 'sonner';
 
 // Extend the Supabase user type to include photo_url
 type UserWithPhoto = {
@@ -501,9 +502,14 @@ export const useSupabaseData = (userEmail: string | null) => {
   };
 
   const addVaccination = async (vaccination: Omit<Vaccination, 'id'>) => {
-    if (!userEmail) return;
+    if (!userEmail) {
+      console.error('User email not available');
+      return;
+    }
 
     try {
+      console.log('Adding vaccination:', vaccination);
+      
       const { data, error } = await supabase
         .from('vaccinations')
         .insert({
@@ -519,7 +525,12 @@ export const useSupabaseData = (userEmail: string | null) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding vaccination:', error);
+        throw error;
+      }
+
+      console.log('Vaccination added successfully:', data);
 
       const newVaccination: Vaccination = {
         id: data.id,
@@ -533,9 +544,14 @@ export const useSupabaseData = (userEmail: string | null) => {
       };
 
       setVaccinations(prev => [...prev, newVaccination]);
+      
+      // Exibir mensagem de sucesso
+      toast.success('Vacina registrada com sucesso!');
+      
       return newVaccination;
     } catch (error) {
       console.error('Error adding vaccination:', error);
+      toast.error('Erro ao registrar vacina. Tente novamente.');
       throw error;
     }
   };
