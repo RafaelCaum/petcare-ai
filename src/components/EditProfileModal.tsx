@@ -39,10 +39,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log('Arquivo selecionado:', file);
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPhotoPreview(e.target?.result as string);
+        const result = e.target?.result as string;
+        console.log('Preview da imagem carregado');
+        setPhotoPreview(result);
       };
       reader.readAsDataURL(file);
     }
@@ -51,33 +54,35 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleSave = async () => {
     try {
       setUploading(true);
+      console.log('Iniciando salvamento do perfil...');
 
-      let finalPhotoUrl = photoPreview;
+      let finalPhotoUrl = user.photoUrl;
 
       // If there's a new file, upload it first
       if (selectedFile && onUploadPhoto) {
-        console.log('Uploading new photo...');
+        console.log('Fazendo upload da nova foto...');
         const uploadedUrl = await onUploadPhoto(selectedFile);
         if (uploadedUrl) {
           finalPhotoUrl = uploadedUrl;
-          console.log('Photo uploaded successfully:', uploadedUrl);
+          console.log('Foto enviada com sucesso:', uploadedUrl);
         }
       }
 
       // Save the user data including the new photo URL
       const updatedUserData = { 
-        name, 
-        phone,
+        name: name.trim(), 
+        phone: phone.trim() || null,
         photoUrl: finalPhotoUrl
       };
 
-      console.log('Saving user data:', updatedUserData);
+      console.log('Salvando dados do usuário:', updatedUserData);
       await onSave(updatedUserData);
       
+      console.log('Perfil salvo com sucesso');
       // Close modal after successful save
       onClose();
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error('Erro ao salvar perfil:', error);
     } finally {
       setUploading(false);
     }
@@ -87,23 +92,23 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Edit Profile</h2>
+          <h2 className="text-xl font-bold">Editar Perfil</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X size={24} />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Photo Upload Section */}
           <div className="text-center">
             <div className="mb-4">
               <Avatar className="w-24 h-24 mx-auto border-4 border-blue-200">
                 <AvatarImage 
                   src={photoPreview || ''} 
-                  alt="Profile preview" 
-                  className="object-cover"
+                  alt="Preview do perfil" 
+                  className="object-cover w-full h-full"
                 />
                 <AvatarFallback className="bg-gray-100 text-gray-400">
                   <Camera size={32} />
@@ -118,14 +123,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   }}
                   className="mt-2 text-red-500 hover:text-red-700 text-sm"
                 >
-                  Remove Photo
+                  Remover Foto
                 </button>
               )}
             </div>
             
             <label className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
               <Upload size={16} className="mr-2" />
-              {photoPreview ? 'Change Photo' : 'Add Photo'}
+              {photoPreview ? 'Alterar Foto' : 'Adicionar Foto'}
               <input
                 type="file"
                 accept="image/*"
@@ -137,14 +142,15 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              Nome Completo *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your full name"
+              placeholder="Seu nome completo"
+              required
             />
           </div>
 
@@ -158,19 +164,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               disabled
               className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100"
             />
-            <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+            <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone
+              Telefone
             </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your phone number"
+              placeholder="Seu telefone"
             />
           </div>
         </div>
@@ -180,15 +186,15 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Cancel
+            Cancelar
           </button>
           <button
             onClick={handleSave}
-            disabled={uploading}
+            disabled={uploading || !name.trim()}
             className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50"
           >
             <Save size={16} className="mr-2" />
-            {uploading ? 'Saving...' : 'Save'}
+            {uploading ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </div>
