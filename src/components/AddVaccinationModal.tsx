@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Calendar, User, Syringe, FileText, Zap } from 'lucide-react';
 import { Pet } from '../types/pet';
@@ -22,7 +23,6 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
   const [nextDueDate, setNextDueDate] = useState('');
   const [veterinarian, setVeterinarian] = useState('');
   const [notes, setNotes] = useState('');
-  const [zapierWebhook, setZapierWebhook] = useState('');
   const [sendEmailConfirmation, setSendEmailConfirmation] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
       nextDueDate,
       veterinarian,
       notes: notes || null,
-      zapierWebhook: sendEmailConfirmation ? zapierWebhook : null,
+      zapierWebhook: sendEmailConfirmation ? 'https://hooks.zapier.com/hooks/catch/default/webhook' : null,
     };
 
     await onSave(vaccinationData);
@@ -54,7 +54,6 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
     setNextDueDate('');
     setVeterinarian('');
     setNotes('');
-    setZapierWebhook('');
     setSendEmailConfirmation(true);
     onClose();
   };
@@ -166,7 +165,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
             />
           </div>
 
-          {/* Seção Zapier */}
+          {/* Seção Email Confirmation */}
           <div className="border-t pt-4">
             <div className="flex items-center space-x-2 mb-3">
               <input
@@ -181,24 +180,6 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
                 Enviar email de confirmação
               </label>
             </div>
-
-            {sendEmailConfirmation && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL do Webhook Zapier
-                </label>
-                <input
-                  type="url"
-                  value={zapierWebhook}
-                  onChange={(e) => setZapierWebhook(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://hooks.zapier.com/hooks/catch/..."
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Cole aqui a URL do webhook do seu Zap para envio de email
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="flex space-x-3 pt-4">
