@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { X, Save, Syringe } from 'lucide-react';
+import { X, Save, Syringe, Zap } from 'lucide-react';
 import { Vaccination, Pet } from '../types/pet';
 
 interface AddVaccinationModalProps {
   pets: Pet[];
   isOpen: boolean;
   onClose: () => void;
-  onSave: (vaccination: Omit<Vaccination, 'id'>) => void;
+  onSave: (vaccination: Omit<Vaccination, 'id'> & { zapierWebhook?: string }) => void;
 }
 
 const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen, onClose, onSave }) => {
@@ -18,6 +18,8 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
   const [nextDueDate, setNextDueDate] = useState('');
   const [veterinarian, setVeterinarian] = useState('');
   const [notes, setNotes] = useState('');
+  const [zapierWebhook, setZapierWebhook] = useState('');
+  const [enableZapier, setEnableZapier] = useState(false);
 
   const commonVaccines = [
     'DHPP (Distemper, Hepatitis, Parvovirus, Parainfluenza)',
@@ -42,15 +44,18 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
       return;
     }
 
-    onSave({
+    const vaccinationData = {
       petId,
       vaccineName: finalVaccineName,
       dateGiven,
       nextDueDate,
       veterinarian: veterinarian.trim(),
       notes: notes.trim(),
-      imageUrl: undefined
-    });
+      imageUrl: undefined,
+      ...(enableZapier && zapierWebhook.trim() && { zapierWebhook: zapierWebhook.trim() })
+    };
+
+    onSave(vaccinationData);
 
     // Reset form
     setPetId(pets.length > 0 ? pets[0].id : '');
@@ -60,6 +65,8 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
     setNextDueDate('');
     setVeterinarian('');
     setNotes('');
+    setZapierWebhook('');
+    setEnableZapier(false);
     onClose();
   };
 
@@ -177,6 +184,41 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
               placeholder="Observações sobre a vacinação"
               rows={3}
             />
+          </div>
+
+          {/* Zapier Integration Section */}
+          <div className="border-t pt-4">
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="enableZapier"
+                checked={enableZapier}
+                onChange={(e) => setEnableZapier(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="enableZapier" className="text-sm font-medium text-gray-700 flex items-center">
+                <Zap size={16} className="mr-1 text-yellow-500" />
+                Ativar notificações por email (Zapier)
+              </label>
+            </div>
+            
+            {enableZapier && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Webhook do Zapier
+                </label>
+                <input
+                  type="url"
+                  value={zapierWebhook}
+                  onChange={(e) => setZapierWebhook(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="https://hooks.zapier.com/hooks/catch/..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Cole aqui a URL do webhook do Zapier para receber confirmações e lembretes por email
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

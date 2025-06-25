@@ -11,6 +11,7 @@ import EditPetModal from '../components/EditPetModal';
 import AddVaccinationModal from '../components/AddVaccinationModal';
 import AddReminderModal from '../components/AddReminderModal';
 import AddExpenseModal from '../components/AddExpenseModal';
+import ZapierIntegration from '../components/ZapierIntegration';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { User, Pet } from '../types/pet';
 import { toast } from 'sonner';
@@ -122,6 +123,37 @@ const Index = () => {
     try {
       console.log('Saving vaccination:', vaccinationData);
       await addVaccination(vaccinationData);
+      
+      // Send Zapier webhook for email confirmation
+      if (vaccinationData.zapierWebhook) {
+        try {
+          await fetch(vaccinationData.zapierWebhook, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            mode: "no-cors",
+            body: JSON.stringify({
+              type: "vaccination_confirmation",
+              petName: pets.find(p => p.id === vaccinationData.petId)?.name || "Pet",
+              vaccineName: vaccinationData.vaccineName,
+              dateGiven: vaccinationData.dateGiven,
+              nextDueDate: vaccinationData.nextDueDate,
+              veterinarian: vaccinationData.veterinarian,
+              userEmail: userEmail,
+              timestamp: new Date().toISOString(),
+              emailSubject: "Confirmação da Vacina do Seu Pet 🐶❤️",
+              emailBody: `Olá! A vacina ${vaccinationData.vaccineName} foi aplicada com sucesso no seu pet. Próxima dose: ${new Date(vaccinationData.nextDueDate).toLocaleDateString('pt-BR')}. Veterinário: Dr(a). ${vaccinationData.veterinarian}`
+            }),
+          });
+          console.log('Zapier webhook sent for vaccination confirmation');
+          toast.success('Email de confirmação enviado!');
+        } catch (error) {
+          console.error('Error sending Zapier webhook:', error);
+          toast.error('Erro ao enviar email de confirmação');
+        }
+      }
+      
       // A mensagem de sucesso já é exibida na função addVaccination
     } catch (error) {
       console.error('Error in handleSaveVaccination:', error);
@@ -240,9 +272,11 @@ const Index = () => {
         );
       case 'pet':
         console.log('Rendering PetPage with pets:', pets);
+        console.log('Rendering PetPage with vaccinations:', vaccinations);
         return (
           <PetPage
             pets={pets}
+            vaccinations={vaccinations}
             onEditPet={handleEditPet}
             onAddVaccination={handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
@@ -275,6 +309,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto bg-white min-h-screen relative">
+        {/* Zapier Integration Component */}
+        <ZapierIntegration 
+          vaccinations={vaccinations}
+          pets={pets}
+          userEmail={userEmail}
+        />
+
         {/* Main Content */}
         <div className="px-4 pt-4">
           {renderActiveTab()}

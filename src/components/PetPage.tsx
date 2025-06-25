@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { Pet } from '../types/pet';
+import { Pet, Vaccination } from '../types/pet';
 import PetAvatar from './PetAvatar';
-import { Calendar, Weight, Palette, Users, Plus, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Weight, Palette, Users, Plus, Edit, Trash2, Syringe, MapPin, Phone, Clock } from 'lucide-react';
 
 interface PetPageProps {
   pets: Pet[];
+  vaccinations: Vaccination[];
   onEditPet: (pet?: Pet) => void;
   onAddVaccination: () => void;
   onDeleteVaccination: (vaccinationId: string) => Promise<void>;
@@ -14,6 +15,7 @@ interface PetPageProps {
 
 const PetPage: React.FC<PetPageProps> = ({ 
   pets, 
+  vaccinations,
   onEditPet,
   onAddVaccination,
   onDeleteVaccination,
@@ -23,6 +25,7 @@ const PetPage: React.FC<PetPageProps> = ({
   const [selectedPet, setSelectedPet] = useState<Pet | null>(pets[0] || null);
 
   console.log('PetPage rendering with pets:', pets);
+  console.log('PetPage rendering with vaccinations:', vaccinations);
 
   const formatAge = (birthDate: string) => {
     const birth = new Date(birthDate);
@@ -41,6 +44,10 @@ const PetPage: React.FC<PetPageProps> = ({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   const handleDeletePet = async (pet: Pet, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm(`Tem certeza que deseja excluir ${pet.name}?`)) {
@@ -52,6 +59,15 @@ const PetPage: React.FC<PetPageProps> = ({
     e.stopPropagation();
     onEditPet(pet);
   };
+
+  const handleDeleteVaccination = async (vaccinationId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta vacinação?')) {
+      await onDeleteVaccination(vaccinationId);
+    }
+  };
+
+  // Get vaccinations for selected pet
+  const petVaccinations = selectedPet ? vaccinations.filter(v => v.petId === selectedPet.id) : [];
 
   if (pets.length === 0) {
     return (
@@ -144,44 +160,157 @@ const PetPage: React.FC<PetPageProps> = ({
       
       case 'vaccinations':
         return (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Vacinações</h3>
-            <div className="text-center py-8">
-              <div className="text-4xl mb-2">💉</div>
-              <p className="text-gray-500">Nenhuma vacinação registrada</p>
-              <button
-                onClick={onAddVaccination}
-                className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Adicionar Vacinação
-              </button>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                  <Syringe className="mr-2 text-primary" size={20} />
+                  Vacinações
+                </h3>
+                <button
+                  onClick={onAddVaccination}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  Adicionar
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              {petVaccinations.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-2">💉</div>
+                  <p className="text-gray-500 mb-4">Nenhuma vacinação registrada</p>
+                  <button
+                    onClick={onAddVaccination}
+                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Adicionar Primeira Vacinação
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {petVaccinations.map((vaccination) => (
+                    <div key={vaccination.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-800 flex items-center">
+                          <Syringe size={16} className="mr-2 text-blue-500" />
+                          {vaccination.vaccineName}
+                        </h4>
+                        <button
+                          onClick={() => handleDeleteVaccination(vaccination.id)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Calendar size={14} className="mr-2 text-green-500" />
+                          <span>Aplicada: {formatDate(vaccination.dateGiven)}</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <Clock size={14} className="mr-2 text-orange-500" />
+                          <span>Próxima: {formatDate(vaccination.nextDueDate)}</span>
+                        </div>
+                        
+                        {vaccination.veterinarian && (
+                          <div className="flex items-center">
+                            <Users size={14} className="mr-2 text-purple-500" />
+                            <span>Dr(a). {vaccination.veterinarian}</span>
+                          </div>
+                        )}
+                        
+                        {vaccination.notes && (
+                          <div className="col-span-full">
+                            <p className="text-gray-600 bg-gray-50 p-2 rounded text-sm">
+                              <strong>Observações:</strong> {vaccination.notes}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
       
       case 'vet-directory':
         return (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Diretório Veterinário</h3>
-            <div className="space-y-4">
-              {[
-                { name: 'Clínica Veterinária PetCare', address: 'Rua das Flores, 123', phone: '(11) 1234-5678', emergency: true },
-                { name: 'Hospital Veterinário Animal Life', address: 'Av. Principal, 456', phone: '(11) 2345-6789', emergency: true },
-                { name: 'Vet Center 24h', address: 'Rua do Pet, 789', phone: '(11) 3456-7890', emergency: true }
-              ].map((vet, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-gray-800">{vet.name}</h4>
-                    {vet.emergency && (
-                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                        24h
-                      </span>
-                    )}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <MapPin className="mr-2 text-primary" size={20} />
+                Diretório Veterinário - SOS
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">Clínicas de emergência próximas</p>
+            </div>
+            
+            <div className="p-6">
+              <div className="space-y-4">
+                {[
+                  { 
+                    name: 'Clínica Veterinária PetCare', 
+                    address: 'Rua das Flores, 123 - Centro', 
+                    phone: '(11) 1234-5678', 
+                    emergency: true,
+                    hours: '24h'
+                  },
+                  { 
+                    name: 'Hospital Veterinário Animal Life', 
+                    address: 'Av. Principal, 456 - Vila Nova', 
+                    phone: '(11) 2345-6789', 
+                    emergency: true,
+                    hours: '24h'
+                  },
+                  { 
+                    name: 'Vet Center Emergency', 
+                    address: 'Rua do Pet, 789 - Jardim Animal', 
+                    phone: '(11) 3456-7890', 
+                    emergency: true,
+                    hours: '24h'
+                  }
+                ].map((vet, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-800 flex items-center">
+                        <MapPin size={16} className="mr-2 text-red-500" />
+                        {vet.name}
+                      </h4>
+                      {vet.emergency && (
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
+                          🚨 {vet.hours}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p className="flex items-center">
+                        <MapPin size={14} className="mr-2 text-gray-400" />
+                        {vet.address}
+                      </p>
+                      <p className="flex items-center">
+                        <Phone size={14} className="mr-2 text-gray-400" />
+                        <a href={`tel:${vet.phone}`} className="text-blue-600 hover:text-blue-800">
+                          {vet.phone}
+                        </a>
+                      </p>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button className="bg-green-600 text-white text-xs py-1 px-3 rounded hover:bg-green-700 transition-colors">
+                        Ligar Agora
+                      </button>
+                      <button className="bg-blue-600 text-white text-xs py-1 px-3 rounded hover:bg-blue-700 transition-colors">
+                        Ver Localização
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{vet.address}</p>
-                  <p className="text-sm text-blue-600">{vet.phone}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         );
@@ -277,7 +406,7 @@ const PetPage: React.FC<PetPageProps> = ({
             ))}
           </div>
           
-          <div className="p-6">
+          <div>
             {renderTabContent()}
           </div>
         </div>
