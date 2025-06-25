@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Pet } from '../types/pet';
 import PetAvatar from './PetAvatar';
@@ -6,10 +5,19 @@ import { Calendar, Weight, Palette, Users } from 'lucide-react';
 
 interface PetPageProps {
   pets: Pet[];
-  onEditPet: (pet: Pet) => void;
+  onEditPet: (pet?: Pet) => void;
+  onAddVaccination: () => void;
+  onDeleteVaccination: (vaccinationId: string) => Promise<void>;
+  onDeletePet: (petId: string) => Promise<void>;
 }
 
-const PetPage: React.FC<PetPageProps> = ({ pets, onEditPet }) => {
+const PetPage: React.FC<PetPageProps> = ({ 
+  pets, 
+  onEditPet,
+  onAddVaccination,
+  onDeleteVaccination,
+  onDeletePet
+}) => {
   console.log('PetPage rendering with pets:', pets);
 
   if (pets.length === 0) {
