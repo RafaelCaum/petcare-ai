@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Calendar, DollarSign, Activity, Syringe, Check, Clock } from 'lucide-react';
 import PetAvatar from './PetAvatar';
@@ -162,10 +161,8 @@ const HomePage: React.FC<HomePageProps> = ({
       <div className="pet-card">
         <div className="flex items-center space-x-4">
           <PetAvatar 
-            petType={primaryPet.type} 
-            petName={primaryPet.name} 
-            size="lg" 
-            photoUrl={primaryPet.photoUrl}
+            pet={primaryPet}
+            size="large"
           />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">Hello, {primaryPet.name}! 👋</h1>

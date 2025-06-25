@@ -237,11 +237,10 @@ const Index = () => {
           />
         );
       case 'pet':
-        console.log('Rendering PetPage with pets:', pets, 'vaccinations:', vaccinations);
+        console.log('Rendering PetPage with pets:', pets);
         return (
           <PetPage
             pets={pets}
-            vaccinations={vaccinations}
             onEditPet={handleEditPet}
             onAddVaccination={handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
