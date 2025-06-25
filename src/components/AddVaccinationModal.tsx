@@ -1,72 +1,62 @@
 
 import React, { useState } from 'react';
-import { X, Save, Syringe, Zap } from 'lucide-react';
-import { Vaccination, Pet } from '../types/pet';
+import { X, Calendar, User, Syringe, FileText, Zap } from 'lucide-react';
+import { Pet } from '../types/pet';
+import { toast } from 'sonner';
 
 interface AddVaccinationModalProps {
   pets: Pet[];
   isOpen: boolean;
   onClose: () => void;
-  onSave: (vaccination: Omit<Vaccination, 'id'> & { zapierWebhook?: string }) => void;
+  onSave: (vaccinationData: any) => void;
 }
 
-const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen, onClose, onSave }) => {
-  const [petId, setPetId] = useState(pets.length > 0 ? pets[0].id : '');
+const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
+  pets,
+  isOpen,
+  onClose,
+  onSave,
+}) => {
+  const [petId, setPetId] = useState('');
   const [vaccineName, setVaccineName] = useState('');
-  const [customVaccineName, setCustomVaccineName] = useState('');
   const [dateGiven, setDateGiven] = useState('');
   const [nextDueDate, setNextDueDate] = useState('');
   const [veterinarian, setVeterinarian] = useState('');
   const [notes, setNotes] = useState('');
   const [zapierWebhook, setZapierWebhook] = useState('');
-  const [enableZapier, setEnableZapier] = useState(false);
+  const [sendEmailConfirmation, setSendEmailConfirmation] = useState(false);
 
-  const commonVaccines = [
-    'DHPP (Distemper, Hepatitis, Parvovirus, Parainfluenza)',
-    'Rabies',
-    'Giardia',
-    'Canine Influenza',
-    'Leishmaniasis',
-    'FVRCP (Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia)',
-    'Feline Rabies',
-    'FeLV (Feline Leukemia)',
-    'Bordetella',
-    'Lyme Disease',
-    'Leptospirosis'
-  ];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSave = () => {
-    const finalVaccineName = vaccineName === 'custom' ? customVaccineName.trim() : vaccineName;
-    
-    // Validação de campos obrigatórios
-    if (!finalVaccineName || !dateGiven || !petId || !nextDueDate || !veterinarian.trim()) {
-      alert('Por favor, preencha todos os campos obrigatórios.');
+    if (!petId || !vaccineName || !dateGiven || !nextDueDate || !veterinarian) {
+      toast.error('Preencha todos os campos obrigatórios');
       return;
     }
 
     const vaccinationData = {
       petId,
-      vaccineName: finalVaccineName,
+      vaccineName,
       dateGiven,
       nextDueDate,
-      veterinarian: veterinarian.trim(),
-      notes: notes.trim(),
-      imageUrl: undefined,
-      ...(enableZapier && zapierWebhook.trim() && { zapierWebhook: zapierWebhook.trim() })
+      veterinarian,
+      notes: notes || null,
+      zapierWebhook: sendEmailConfirmation ? zapierWebhook : null,
     };
 
-    onSave(vaccinationData);
+    await onSave(vaccinationData);
+    handleClose();
+  };
 
-    // Reset form
-    setPetId(pets.length > 0 ? pets[0].id : '');
+  const handleClose = () => {
+    setPetId('');
     setVaccineName('');
-    setCustomVaccineName('');
     setDateGiven('');
     setNextDueDate('');
     setVeterinarian('');
     setNotes('');
     setZapierWebhook('');
-    setEnableZapier(false);
+    setSendEmailConfirmation(false);
     onClose();
   };
 
@@ -76,16 +66,16 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold flex items-center">
-            <Syringe className="mr-2 text-primary" size={20} />
-            Adicionar Vacinação
-          </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-xl font-bold text-gray-800">Nova Vacinação</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <X size={24} />
           </button>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Pet *
@@ -93,12 +83,13 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
             <select
               value={petId}
               onChange={(e) => setPetId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              {pets.map(pet => (
+              <option value="">Selecione um pet</option>
+              {pets.map((pet) => (
                 <option key={pet.id} value={pet.id}>
-                  {pet.name} ({pet.type})
+                  {pet.name}
                 </option>
               ))}
             </select>
@@ -106,138 +97,127 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({ pets, isOpen,
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Syringe className="inline w-4 h-4 mr-1" />
               Nome da Vacina *
             </label>
-            <select
+            <input
+              type="text"
               value={vaccineName}
               onChange={(e) => setVaccineName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: V10, Antirrábica"
               required
-            >
-              <option value="">Selecione uma vacina</option>
-              {commonVaccines.map(vaccine => (
-                <option key={vaccine} value={vaccine}>{vaccine}</option>
-              ))}
-              <option value="custom">Outra (Vacina Personalizada)</option>
-            </select>
-            
-            {vaccineName === 'custom' && (
-              <input
-                type="text"
-                value={customVaccineName}
-                onChange={(e) => setCustomVaccineName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mt-2"
-                placeholder="Digite o nome da vacina"
-                required
-              />
-            )}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data da Aplicação *
+              <Calendar className="inline w-4 h-4 mr-1" />
+              Data de Aplicação *
             </label>
             <input
               type="date"
               value={dateGiven}
               onChange={(e) => setDateGiven(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Próxima Data de Vencimento *
+              <Calendar className="inline w-4 h-4 mr-1" />
+              Próxima Dose *
             </label>
             <input
               type="date"
               value={nextDueDate}
               onChange={(e) => setNextDueDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              <User className="inline w-4 h-4 mr-1" />
               Veterinário *
             </label>
             <input
               type="text"
               value={veterinarian}
               onChange={(e) => setVeterinarian(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Nome do veterinário"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Dr(a). Nome do veterinário"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              <FileText className="inline w-4 h-4 mr-1" />
               Observações
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Observações sobre a vacinação"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
+              placeholder="Observações adicionais..."
             />
           </div>
 
-          {/* Zapier Integration Section */}
+          {/* Seção Zapier */}
           <div className="border-t pt-4">
-            <div className="flex items-center mb-4">
+            <div className="flex items-center space-x-2 mb-3">
               <input
                 type="checkbox"
-                id="enableZapier"
-                checked={enableZapier}
-                onChange={(e) => setEnableZapier(e.target.checked)}
-                className="mr-2"
+                id="sendEmail"
+                checked={sendEmailConfirmation}
+                onChange={(e) => setSendEmailConfirmation(e.target.checked)}
+                className="rounded"
               />
-              <label htmlFor="enableZapier" className="text-sm font-medium text-gray-700 flex items-center">
-                <Zap size={16} className="mr-1 text-yellow-500" />
-                Ativar notificações por email (Zapier)
+              <label htmlFor="sendEmail" className="text-sm font-medium text-gray-700 flex items-center">
+                <Zap className="w-4 h-4 mr-1 text-yellow-500" />
+                Enviar email de confirmação
               </label>
             </div>
-            
-            {enableZapier && (
+
+            {sendEmailConfirmation && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Webhook do Zapier
+                  URL do Webhook Zapier
                 </label>
                 <input
                   type="url"
                   value={zapierWebhook}
                   onChange={(e) => setZapierWebhook(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="https://hooks.zapier.com/hooks/catch/..."
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Cole aqui a URL do webhook do Zapier para receber confirmações e lembretes por email
+                  Cole aqui a URL do webhook do seu Zap para envio de email
                 </p>
               </div>
             )}
           </div>
-        </div>
 
-        <div className="flex space-x-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={(!vaccineName || (vaccineName === 'custom' && !customVaccineName.trim())) || !dateGiven || !petId || !nextDueDate || !veterinarian.trim()}
-            className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50"
-          >
-            <Save size={16} className="mr-2" />
-            Salvar
-          </button>
-        </div>
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Registrar Vacina
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

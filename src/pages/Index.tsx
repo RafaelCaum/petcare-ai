@@ -127,6 +127,7 @@ const Index = () => {
       // Send Zapier webhook for email confirmation
       if (vaccinationData.zapierWebhook) {
         try {
+          const selectedPet = pets.find(p => p.id === vaccinationData.petId);
           await fetch(vaccinationData.zapierWebhook, {
             method: "POST",
             headers: {
@@ -135,7 +136,7 @@ const Index = () => {
             mode: "no-cors",
             body: JSON.stringify({
               type: "vaccination_confirmation",
-              petName: pets.find(p => p.id === vaccinationData.petId)?.name || "Pet",
+              petName: selectedPet?.name || "Pet",
               vaccineName: vaccinationData.vaccineName,
               dateGiven: vaccinationData.dateGiven,
               nextDueDate: vaccinationData.nextDueDate,
@@ -143,7 +144,7 @@ const Index = () => {
               userEmail: userEmail,
               timestamp: new Date().toISOString(),
               emailSubject: "Confirmação da Vacina do Seu Pet 🐶❤️",
-              emailBody: `Olá! A vacina ${vaccinationData.vaccineName} foi aplicada com sucesso no seu pet. Próxima dose: ${new Date(vaccinationData.nextDueDate).toLocaleDateString('pt-BR')}. Veterinário: Dr(a). ${vaccinationData.veterinarian}`
+              emailBody: `Olá! A vacina ${vaccinationData.vaccineName} foi aplicada com sucesso no seu pet ${selectedPet?.name || 'seu pet'}. Próxima dose: ${new Date(vaccinationData.nextDueDate).toLocaleDateString('pt-BR')}. Veterinário: Dr(a). ${vaccinationData.veterinarian}`
             }),
           });
           console.log('Zapier webhook sent for vaccination confirmation');
@@ -154,10 +155,10 @@ const Index = () => {
         }
       }
       
-      // A mensagem de sucesso já é exibida na função addVaccination
+      toast.success('Vacina registrada com sucesso!');
     } catch (error) {
       console.error('Error in handleSaveVaccination:', error);
-      // A mensagem de erro já é exibida na função addVaccination
+      toast.error('Erro ao registrar vacina');
     }
   };
 

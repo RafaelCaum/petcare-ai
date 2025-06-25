@@ -25,7 +25,7 @@ const ZapierIntegration: React.FC<ZapierIntegrationProps> = ({ vaccinations, pet
         const pet = pets.find(p => p.id === vaccination.petId);
         
         if (pet) {
-          // Send reminder webhook (you would need to store webhook URLs per user)
+          // Log reminder data (in a real implementation, you would store webhook URLs per user)
           const reminderData = {
             type: "vaccination_reminder",
             petName: pet.name,
@@ -33,11 +33,14 @@ const ZapierIntegration: React.FC<ZapierIntegrationProps> = ({ vaccinations, pet
             dueDate: vaccination.nextDueDate,
             veterinarian: vaccination.veterinarian,
             userEmail: userEmail,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            emailSubject: "Lembrete: Hoje é dia de vacina!",
+            emailBody: `Olá! Hoje é o dia de aplicar a vacina '${vaccination.vaccineName}' no seu pet ${pet.name}. Consulte seu veterinário para garantir a proteção.`
           };
 
-          console.log('Vaccination due today:', reminderData);
+          console.log('Vaccination due today - reminder data:', reminderData);
           // Here you would send to a stored Zapier webhook for reminders
+          // For now, we just log the data
         }
       });
     };
