@@ -125,21 +125,50 @@ const Index = () => {
     }
   };
 
-  const handleSavePet = async (petData: any) => {
+  const handleSavePet = async (petData: any, photoFile?: File) => {
     try {
       console.log('=== HANDLE SAVE PET ===');
       console.log('Selected pet for modal:', selectedPetForModal);
       console.log('Pet data to save:', petData);
+      console.log('Photo file:', photoFile);
 
       if (selectedPetForModal) {
         // É uma atualização
         console.log('Updating existing pet with ID:', selectedPetForModal.id);
+        
+        // Handle photo upload first if there's a new photo
+        if (photoFile) {
+          console.log('Uploading new photo for existing pet...');
+          const photoUrl = await uploadPetPhoto(photoFile, selectedPetForModal.id);
+          if (photoUrl) {
+            petData.photoUrl = photoUrl;
+          }
+        }
+        
         await updatePet(selectedPetForModal.id, petData);
         toast.success('Pet atualizado com sucesso!');
       } else {
         // É uma criação
         console.log('Creating new pet');
-        await addPet(petData);
+        
+        // First create the pet
+        const newPet = await addPet(petData);
+        
+        // Then handle photo upload if there's a photo and the pet was created successfully
+        if (photoFile && newPet) {
+          console.log('Uploading photo for new pet...');
+          try {
+            const photoUrl = await uploadPetPhoto(photoFile, newPet.id);
+            if (photoUrl) {
+              // Update the pet with the photo URL
+              await updatePet(newPet.id, { ...petData, photoUrl });
+            }
+          } catch (photoError) {
+            console.error('Error uploading photo for new pet:', photoError);
+            // Don't fail the entire operation if photo upload fails
+          }
+        }
+        
         toast.success('Pet adicionado com sucesso!');
       }
       

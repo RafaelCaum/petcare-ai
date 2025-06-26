@@ -81,14 +81,14 @@ const PetPage: React.FC<PetPageProps> = ({
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => onEditPet()}
-            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
           >
             <Plus size={20} />
             Add Pet
           </button>
         </div>
 
-        <div className="bg-gray-100 rounded-2xl p-8 text-center">
+        <div className="bg-gray-100 rounded-2xl p-8 text-center shadow-lg">
           <div className="text-6xl mb-4">🐕</div>
           <h2 className="text-xl font-bold text-gray-700 mb-2">Nenhum pet cadastrado</h2>
           <p className="text-gray-500">Adicione seu primeiro pet para começar!</p>
@@ -103,12 +103,12 @@ const PetPage: React.FC<PetPageProps> = ({
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
             <div className="flex items-center space-x-4 mb-4">
               <PetAvatar pet={selectedPet} size="large" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800">{selectedPet.name}</h3>
-                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full shadow-sm">
                   {selectedPet.type === 'dog' ? '🐕 Cão' : '🐱 Gato'}
                 </span>
               </div>
@@ -145,7 +145,7 @@ const PetPage: React.FC<PetPageProps> = ({
               
               {selectedPet.gender && (
                 <div className="flex items-center text-gray-600">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm ${
                     selectedPet.gender === 'male' 
                       ? 'bg-blue-100 text-blue-800' 
                       : 'bg-pink-100 text-pink-800'
@@ -160,7 +160,7 @@ const PetPage: React.FC<PetPageProps> = ({
       
       case 'vaccinations':
         return (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center">
@@ -169,7 +169,7 @@ const PetPage: React.FC<PetPageProps> = ({
                 </h3>
                 <button
                   onClick={onAddVaccination}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
                 >
                   <Plus size={16} />
                   Adicionar
@@ -184,7 +184,7 @@ const PetPage: React.FC<PetPageProps> = ({
                   <p className="text-gray-500 mb-4">Nenhuma vacinação registrada</p>
                   <button
                     onClick={onAddVaccination}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
                   >
                     Adicionar Primeira Vacinação
                   </button>
@@ -192,7 +192,7 @@ const PetPage: React.FC<PetPageProps> = ({
               ) : (
                 <div className="space-y-4">
                   {petVaccinations.map((vaccination) => (
-                    <div key={vaccination.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div key={vaccination.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow shadow-md">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold text-gray-800 flex items-center">
                           <Syringe size={16} className="mr-2 text-blue-500" />
@@ -226,7 +226,7 @@ const PetPage: React.FC<PetPageProps> = ({
                         
                         {vaccination.notes && (
                           <div className="col-span-full">
-                            <p className="text-gray-600 bg-gray-50 p-2 rounded text-sm">
+                            <p className="text-gray-600 bg-gray-50 p-2 rounded text-sm shadow-sm">
                               <strong>Observações:</strong> {vaccination.notes}
                             </p>
                           </div>
@@ -256,7 +256,7 @@ const PetPage: React.FC<PetPageProps> = ({
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => onEditPet()}
-          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
         >
           <Plus size={20} />
           Add Pet
@@ -265,14 +265,14 @@ const PetPage: React.FC<PetPageProps> = ({
           <>
             <button
               onClick={(e) => handleEditPet(selectedPet, e)}
-              className="bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+              className="bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
             >
               <Edit size={20} />
               Edit
             </button>
             <button
               onClick={(e) => handleDeletePet(selectedPet, e)}
-              className="bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              className="bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
             >
               <Trash2 size={20} />
               Delete
@@ -286,10 +286,10 @@ const PetPage: React.FC<PetPageProps> = ({
         {pets.map((pet) => (
           <div
             key={pet.id}
-            className={`bg-white rounded-2xl p-4 shadow-sm border transition-all cursor-pointer ${
+            className={`bg-white rounded-2xl p-4 shadow-lg border transition-all cursor-pointer ${
               selectedPet?.id === pet.id 
-                ? 'border-blue-500 ring-2 ring-blue-200' 
-                : 'border-gray-100 hover:shadow-md'
+                ? 'border-blue-500 ring-2 ring-blue-200 shadow-xl' 
+                : 'border-gray-100 hover:shadow-xl'
             }`}
             onClick={() => setSelectedPet(pet)}
           >
@@ -309,7 +309,7 @@ const PetPage: React.FC<PetPageProps> = ({
 
       {/* Tabs */}
       {selectedPet && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="flex border-b border-gray-200">
             {[
               { id: 'profile', label: 'Profile', icon: '👤' },
@@ -320,7 +320,7 @@ const PetPage: React.FC<PetPageProps> = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
+                    ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
