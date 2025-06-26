@@ -5,12 +5,12 @@ import { toast } from 'sonner';
 
 interface UseModalHandlersProps {
   pets: Pet[];
-  addExpense: (data: any) => Promise<void>;
-  addReminder: (data: any) => Promise<void>;
-  addPet: (data: any, file?: File) => Promise<void>;
-  updatePet: (id: string, data: any, file?: File) => Promise<void>;
-  updateUser: (data: Partial<User>) => Promise<void>;
-  addVaccination: (data: any) => Promise<void>;
+  addExpense: (data: any) => Promise<any>;
+  addReminder: (data: any) => Promise<any>;
+  addPet: (data: any, file?: File) => Promise<any>;
+  updatePet: (id: string, data: any, file?: File) => Promise<any>;
+  updateUser: (data: Partial<User>) => Promise<any>;
+  addVaccination: (data: any) => Promise<any>;
   refetch: () => Promise<void>;
   userEmail: string | null;
 }
