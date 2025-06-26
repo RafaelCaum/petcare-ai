@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -8,7 +9,7 @@ import SplashScreen from '../components/SplashScreen';
 import EmailLogin from '../components/EmailLogin';
 import ModalManager from '../components/modals/ModalManager';
 import TrialStatusBar from '../components/status/TrialStatusBar';
-import ZapierIntegration from '../components/ZapierIntegration';
+import N8nIntegration from '../components/N8nIntegration';
 import TrialExpiredModal from '../components/TrialExpiredModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { usePremiumAccess } from '../hooks/usePremiumAccess';
@@ -210,7 +211,7 @@ const Index = () => {
           isPaying={isPaying}
         />
 
-        <ZapierIntegration 
+        <N8nIntegration 
           vaccinations={vaccinations}
           pets={pets}
           userEmail={userEmail}
