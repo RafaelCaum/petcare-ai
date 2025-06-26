@@ -220,8 +220,10 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_paying: boolean | null
           is_premium: boolean | null
           name: string
+          next_due_date: string | null
           phone: string | null
           photo_url: string | null
           subscription_end_date: string | null
@@ -234,8 +236,10 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          is_paying?: boolean | null
           is_premium?: boolean | null
           name: string
+          next_due_date?: string | null
           phone?: string | null
           photo_url?: string | null
           subscription_end_date?: string | null
@@ -248,8 +252,10 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_paying?: boolean | null
           is_premium?: boolean | null
           name?: string
+          next_due_date?: string | null
           phone?: string | null
           photo_url?: string | null
           subscription_end_date?: string | null

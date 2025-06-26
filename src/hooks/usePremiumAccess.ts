@@ -9,6 +9,8 @@ interface PremiumStatus {
   trialDaysLeft: number;
   trialExpired: boolean;
   loading: boolean;
+  isPaying: boolean;
+  nextDueDate: string | null;
 }
 
 export const usePremiumAccess = (userEmail: string | null) => {
@@ -17,7 +19,9 @@ export const usePremiumAccess = (userEmail: string | null) => {
     status: 'free',
     trialDaysLeft: 7,
     trialExpired: false,
-    loading: true
+    loading: true,
+    isPaying: false,
+    nextDueDate: null
   });
 
   const checkPremiumStatus = async () => {
@@ -44,7 +48,9 @@ export const usePremiumAccess = (userEmail: string | null) => {
         status: data.status || 'free',
         trialDaysLeft: data.trialDaysLeft || 0,
         trialExpired: data.trialExpired || false,
-        loading: false
+        loading: false,
+        isPaying: data.isPaying || false,
+        nextDueDate: data.nextDueDate || null
       });
     } catch (error) {
       console.error('Error in checkPremiumStatus:', error);

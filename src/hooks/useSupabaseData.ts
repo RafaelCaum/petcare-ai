@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
 import { toast } from 'sonner';
 
-// Extend the Supabase user type to include photo_url
+// Extend the Supabase user type to include photo_url, is_paying, and next_due_date
 type UserWithPhoto = {
   id: string;
   name: string;
@@ -13,6 +13,8 @@ type UserWithPhoto = {
   subscription_status: string;
   trial_start_date: string;
   subscription_end_date: string | null;
+  is_paying: boolean | null;
+  next_due_date: string | null;
   created_at: string;
   updated_at: string;
 };

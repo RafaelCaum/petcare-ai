@@ -39,10 +39,10 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get user data from database to check trial start date
+    // Get user data from database to check trial start date and payment status
     const { data: userDbData, error: userDbError } = await supabaseClient
       .from('users')
-      .select('trial_start_date, subscription_status')
+      .select('trial_start_date, subscription_status, is_paying, next_due_date')
       .eq('email', user.email)
       .single();
 
@@ -64,9 +64,22 @@ serve(async (req) => {
       trialExpired 
     });
 
-    // Check Stripe subscription if we have a Stripe key
+    // Check payment status
+    const isPaying = userDbData.is_paying || false;
+    const nextDueDate = userDbData.next_due_date;
+    
+    // Check if subscription is expired based on next_due_date
+    let subscriptionExpired = false;
+    if (nextDueDate) {
+      const dueDate = new Date(nextDueDate);
+      subscriptionExpired = currentDate > dueDate;
+    }
+
+    logStep("Payment status", { isPaying, nextDueDate, subscriptionExpired });
+
+    // Check Stripe subscription if we have a Stripe key (fallback)
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    let isPremium = false;
+    let stripeHasActiveSub = false;
     
     if (stripeKey) {
       try {
@@ -80,8 +93,8 @@ serve(async (req) => {
             status: "active",
             limit: 1,
           });
-          isPremium = subscriptions.data.length > 0;
-          logStep("Stripe check completed", { customerId, isPremium });
+          stripeHasActiveSub = subscriptions.data.length > 0;
+          logStep("Stripe check completed", { customerId, stripeHasActiveSub });
         }
       } catch (stripeError) {
         logStep("Stripe check failed", { error: stripeError });
@@ -89,9 +102,12 @@ serve(async (req) => {
       }
     }
 
+    // Determine if user has premium access
+    const hasPremiumAccess = (isPaying && !subscriptionExpired) || stripeHasActiveSub;
+
     // Determine status
     let status: 'free' | 'active' | 'expired';
-    if (isPremium) {
+    if (hasPremiumAccess) {
       status = 'active';
     } else if (trialExpired) {
       status = 'expired';
@@ -99,13 +115,22 @@ serve(async (req) => {
       status = 'free';
     }
 
-    logStep("Final status determined", { status, isPremium, trialExpired, trialDaysLeft });
+    logStep("Final status determined", { 
+      status, 
+      hasPremiumAccess, 
+      trialExpired, 
+      trialDaysLeft,
+      isPaying,
+      subscriptionExpired
+    });
 
     return new Response(JSON.stringify({
-      isPremium,
+      isPremium: hasPremiumAccess,
       status,
       trialDaysLeft,
-      trialExpired
+      trialExpired,
+      isPaying,
+      nextDueDate
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -118,7 +143,9 @@ serve(async (req) => {
       isPremium: false,
       status: 'free',
       trialDaysLeft: 0,
-      trialExpired: true
+      trialExpired: true,
+      isPaying: false,
+      nextDueDate: null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

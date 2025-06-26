@@ -60,7 +60,9 @@ const Index = () => {
     trialExpired,
     loading: premiumLoading, 
     createCheckoutSession,
-    checkPremiumStatus 
+    checkPremiumStatus,
+    isPaying,
+    nextDueDate
   } = usePremiumAccess(userEmail);
 
   const handleLogin = (email: string, userData: any) => {
@@ -256,6 +258,26 @@ const Index = () => {
     return `${trialDaysLeft} days free trial`;
   };
 
+  // Check if user should be blocked (trial expired and not paying)
+  const shouldBlockAccess = () => {
+    if (status === 'active') return false; // Premium active
+    if (status === 'free') return false; // Still in trial period
+    
+    // Trial expired - check payment status
+    if (status === 'expired') {
+      if (!isPaying) return true; // Not paying, block access
+      
+      // Check if subscription is expired
+      if (nextDueDate) {
+        const dueDate = new Date(nextDueDate);
+        const today = new Date();
+        if (today > dueDate) return true; // Subscription expired, block access
+      }
+    }
+    
+    return false;
+  };
+
   // Check premium status after login
   useEffect(() => {
     if (userEmail && !premiumLoading) {
@@ -274,8 +296,8 @@ const Index = () => {
     return <SplashScreen isVisible={true} />;
   }
 
-  // Show mandatory trial expired modal if trial expired and not premium
-  if (status === 'expired') {
+  // Show mandatory trial expired modal if access should be blocked
+  if (shouldBlockAccess()) {
     return <TrialExpiredModal />;
   }
 
@@ -357,10 +379,18 @@ const Index = () => {
           </div>
         )}
 
-        {status === 'expired' && (
+        {status === 'expired' && !isPaying && (
           <div className="bg-red-100 border-l-4 border-red-400 p-2 text-sm">
             <p className="text-red-800 text-center font-medium">
               Trial expired
+            </p>
+          </div>
+        )}
+
+        {status === 'active' && (
+          <div className="bg-green-100 border-l-4 border-green-400 p-2 text-sm">
+            <p className="text-green-800 text-center font-medium">
+              Premium Active
             </p>
           </div>
         )}
