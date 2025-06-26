@@ -15,7 +15,7 @@ export const usePremiumAccess = (userEmail: string | null) => {
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({
     isPremium: false,
     status: 'free',
-    trialDaysLeft: 0,
+    trialDaysLeft: 7,
     trialExpired: false,
     loading: true
   });

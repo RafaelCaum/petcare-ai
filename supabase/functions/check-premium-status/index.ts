@@ -37,73 +37,74 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     
-    logStep("User authenticated", { email: user.email });
+    logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user exists in users table, if not create with free trial
-    const { data: userRecord, error: userCheckError } = await supabaseClient
+    // Get user data from database to check trial start date
+    const { data: userDbData, error: userDbError } = await supabaseClient
       .from('users')
-      .select('trial_ends_at, is_premium, created_at')
+      .select('trial_start_date, subscription_status')
       .eq('email', user.email)
       .single();
 
-    if (userCheckError && userCheckError.code !== 'PGRST116') {
-      throw new Error(`Error checking user: ${userCheckError.message}`);
+    if (userDbError) {
+      logStep("Error fetching user data", { error: userDbError });
+      throw new Error(`Error fetching user data: ${userDbError.message}`);
     }
 
-    const now = new Date();
-    let trialEndsAt = userRecord?.trial_ends_at ? new Date(userRecord.trial_ends_at) : null;
+    const trialStartDate = new Date(userDbData.trial_start_date);
+    const currentDate = new Date();
+    const daysSinceStart = Math.floor((currentDate.getTime() - trialStartDate.getTime()) / (1000 * 60 * 60 * 24));
+    const trialDaysLeft = Math.max(0, 7 - daysSinceStart);
+    const trialExpired = daysSinceStart >= 7;
+
+    logStep("Trial calculation", { 
+      trialStartDate: trialStartDate.toISOString(), 
+      daysSinceStart, 
+      trialDaysLeft, 
+      trialExpired 
+    });
+
+    // Check Stripe subscription if we have a Stripe key
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    let isPremium = false;
     
-    // If user doesn't exist or doesn't have trial set, create/update with 7-day trial
-    if (!userRecord || !trialEndsAt) {
-      trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 7);
-      
-      await supabaseClient.from('users').upsert({
-        email: user.email,
-        trial_ends_at: trialEndsAt.toISOString(),
-        is_premium: false
-      }, { onConflict: 'email' });
-      
-      logStep("Created/updated user with trial", { trialEndsAt });
+    if (stripeKey) {
+      try {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        
+        if (customers.data.length > 0) {
+          const customerId = customers.data[0].id;
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "active",
+            limit: 1,
+          });
+          isPremium = subscriptions.data.length > 0;
+          logStep("Stripe check completed", { customerId, isPremium });
+        }
+      } catch (stripeError) {
+        logStep("Stripe check failed", { error: stripeError });
+        // Continue without Stripe check if it fails
+      }
     }
 
-    // Calculate days left in trial
-    const timeDiff = trialEndsAt.getTime() - now.getTime();
-    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const trialExpired = daysLeft <= 0;
-
-    logStep("Trial calculation", { daysLeft, trialExpired });
-
-    // Check premium status from premium_users table
-    const { data: premiumUser } = await supabaseClient
-      .from('premium_users')
-      .select('status')
-      .eq('email', user.email)
-      .single();
-
-    const isPremiumActive = premiumUser?.status === 'active';
-    
-    // Determine final status
-    let finalStatus: 'free' | 'active' | 'expired';
-    let isPremium: boolean;
-
-    if (isPremiumActive) {
-      finalStatus = 'active';
-      isPremium = true;
+    // Determine status
+    let status: 'free' | 'active' | 'expired';
+    if (isPremium) {
+      status = 'active';
     } else if (trialExpired) {
-      finalStatus = 'expired';
-      isPremium = false;
+      status = 'expired';
     } else {
-      finalStatus = 'free';
-      isPremium = true; // Still in trial, so has access
+      status = 'free';
     }
 
-    logStep("Final status", { isPremium, finalStatus, daysLeft });
+    logStep("Final status determined", { status, isPremium, trialExpired, trialDaysLeft });
 
     return new Response(JSON.stringify({
       isPremium,
-      status: finalStatus,
-      trialDaysLeft: Math.max(0, daysLeft),
+      status,
+      trialDaysLeft,
       trialExpired
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -112,7 +113,13 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      isPremium: false,
+      status: 'free',
+      trialDaysLeft: 0,
+      trialExpired: true
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

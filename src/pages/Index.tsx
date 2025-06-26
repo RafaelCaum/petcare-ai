@@ -243,6 +243,19 @@ const Index = () => {
     }
   };
 
+  const getTrialMessage = (trialDaysLeft: number, status: string) => {
+    if (status === 'expired') {
+      return 'Trial expired';
+    }
+    if (status === 'active') {
+      return 'Premium Active';
+    }
+    if (trialDaysLeft === 1) {
+      return '1 day free trial';
+    }
+    return `${trialDaysLeft} days free trial`;
+  };
+
   // Check premium status after login
   useEffect(() => {
     if (userEmail && !premiumLoading) {
@@ -335,11 +348,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto bg-white min-h-screen relative">
-        {/* Free Trial Status Indicator */}
-        {status === 'free' && !trialExpired && (
+        {/* Free Trial Status Indicator with dynamic countdown */}
+        {status === 'free' && (
           <div className="bg-blue-100 border-l-4 border-blue-400 p-2 text-sm">
-            <p className="text-blue-800">
-              Free trial: Day {8 - trialDaysLeft} of 7 - {trialDaysLeft} days left
+            <p className="text-blue-800 text-center font-medium">
+              {getTrialMessage(trialDaysLeft, status)}
+            </p>
+          </div>
+        )}
+
+        {status === 'expired' && (
+          <div className="bg-red-100 border-l-4 border-red-400 p-2 text-sm">
+            <p className="text-red-800 text-center font-medium">
+              Trial expired
             </p>
           </div>
         )}

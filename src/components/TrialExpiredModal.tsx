@@ -21,23 +21,10 @@ const TrialExpiredModal: React.FC = () => {
         {/* Título Principal */}
         <div className="space-y-4">
           <h2 className="text-3xl font-bold text-gray-800">
-            🎉 PetCare AI Premium
+            📦 Trial expired
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Seu período de teste terminou. Continue cuidando do seu pet com acesso total às funcionalidades do PetCare AI.
-          </p>
-        </div>
-
-        {/* Preço */}
-        <div className="space-y-2">
-          <div className="text-4xl font-bold text-gray-800">
-            💰 $9.99/month
-          </div>
-          <p className="text-sm text-gray-500">
-            Secure payment via Stripe
-          </p>
-          <p className="text-sm text-green-600 font-medium">
-            🔒 Pagamento 100% seguro com Stripe
+            To continue using PetCare AI, please upgrade to the Premium plan.
           </p>
         </div>
 
@@ -48,28 +35,15 @@ const TrialExpiredModal: React.FC = () => {
             className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
             style={{ backgroundColor: '#6C63FF' }}
           >
-            👉 Upgrade Now 👈
+            👉 Unlock full access – $9.99/month 👈
           </button>
         </div>
 
-        {/* Benefícios */}
-        <div className="pt-6 space-y-3">
-          <div className="flex items-center justify-center space-x-2 text-gray-600">
-            <span className="text-green-500">✅</span>
-            <span>Pets ilimitados</span>
-          </div>
-          <div className="flex items-center justify-center space-x-2 text-gray-600">
-            <span className="text-green-500">✅</span>
-            <span>Controle completo de vacinas</span>
-          </div>
-          <div className="flex items-center justify-center space-x-2 text-gray-600">
-            <span className="text-green-500">✅</span>
-            <span>Lembretes e notificações</span>
-          </div>
-          <div className="flex items-center justify-center space-x-2 text-gray-600">
-            <span className="text-green-500">✅</span>
-            <span>Controle de gastos</span>
-          </div>
+        {/* Informação adicional */}
+        <div className="pt-6">
+          <p className="text-sm text-green-600 font-medium">
+            🔒 Pagamento 100% seguro com Stripe
+          </p>
         </div>
       </div>
     </div>
