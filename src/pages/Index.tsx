@@ -12,7 +12,9 @@ import AddVaccinationModal from '../components/AddVaccinationModal';
 import AddReminderModal from '../components/AddReminderModal';
 import AddExpenseModal from '../components/AddExpenseModal';
 import ZapierIntegration from '../components/ZapierIntegration';
+import PremiumUpgrade from '../components/PremiumUpgrade';
 import { useSupabaseData } from '../hooks/useSupabaseData';
+import { usePremiumAccess } from '../hooks/usePremiumAccess';
 import { User, Pet } from '../types/pet';
 import { toast } from 'sonner';
 
@@ -49,6 +51,14 @@ const Index = () => {
     uploadUserPhoto,
     refetch
   } = useSupabaseData(userEmail);
+
+  const { 
+    isPremium, 
+    status, 
+    loading: premiumLoading, 
+    createCheckoutSession,
+    checkPremiumStatus 
+  } = usePremiumAccess(userEmail);
 
   const handleLogin = (email: string, userData: any) => {
     console.log('Login successful for:', email);
@@ -230,15 +240,27 @@ const Index = () => {
     }
   };
 
+  // Check premium status after login
+  useEffect(() => {
+    if (userEmail && !premiumLoading) {
+      checkPremiumStatus();
+    }
+  }, [userEmail]);
+
   // Show login if no user is logged in
   if (!userEmail) {
     return <EmailLogin onLogin={handleLogin} />;
   }
 
   // Show loading while fetching data
-  if (loading) {
+  if (loading || premiumLoading) {
     console.log('Loading state - showing splash screen');
     return <SplashScreen isVisible={true} />;
+  }
+
+  // Show premium upgrade if user doesn't have access
+  if (!isPremium && status !== 'trial') {
+    return <PremiumUpgrade onUpgrade={createCheckoutSession} />;
   }
 
   console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);
@@ -310,6 +332,15 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto bg-white min-h-screen relative">
+        {/* Premium Status Indicator */}
+        {status === 'trial' && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-400 p-2 text-sm">
+            <p className="text-yellow-800">
+              Free trial active - Upgrade to continue after trial ends
+            </p>
+          </div>
+        )}
+
         {/* Zapier Integration Component */}
         <ZapierIntegration 
           vaccinations={vaccinations}

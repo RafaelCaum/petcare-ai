@@ -29,7 +29,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
     e.preventDefault();
 
     if (!petId || !vaccineName || !dateGiven || !nextDueDate || !veterinarian) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -64,7 +64,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Nova Vacinação</h2>
+          <h2 className="text-xl font-bold text-gray-800">New Vaccination</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600"
@@ -84,7 +84,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Selecione um pet</option>
+              <option value="">Select a pet</option>
               {pets.map((pet) => (
                 <option key={pet.id} value={pet.id}>
                   {pet.name}
@@ -96,14 +96,14 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Syringe className="inline w-4 h-4 mr-1" />
-              Nome da Vacina *
+              Vaccine Name *
             </label>
             <input
               type="text"
               value={vaccineName}
               onChange={(e) => setVaccineName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ex: V10, Antirrábica"
+              placeholder="e.g. DHPP, Rabies"
               required
             />
           </div>
@@ -111,7 +111,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Calendar className="inline w-4 h-4 mr-1" />
-              Data de Aplicação *
+              Date Given *
             </label>
             <input
               type="date"
@@ -125,7 +125,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Calendar className="inline w-4 h-4 mr-1" />
-              Próxima Dose *
+              Next Due Date *
             </label>
             <input
               type="date"
@@ -139,14 +139,14 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <User className="inline w-4 h-4 mr-1" />
-              Veterinário *
+              Veterinarian *
             </label>
             <input
               type="text"
               value={veterinarian}
               onChange={(e) => setVeterinarian(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Dr(a). Nome do veterinário"
+              placeholder="Dr. Veterinarian name"
               required
             />
           </div>
@@ -154,18 +154,18 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <FileText className="inline w-4 h-4 mr-1" />
-              Observações
+              Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
-              placeholder="Observações adicionais..."
+              placeholder="Additional notes..."
             />
           </div>
 
-          {/* Seção Email Confirmation */}
+          {/* Email Confirmation Section */}
           <div className="border-t pt-4">
             <div className="flex items-center space-x-2 mb-3">
               <input
@@ -177,7 +177,7 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
               />
               <label htmlFor="sendEmail" className="text-sm font-medium text-gray-700 flex items-center">
                 <Zap className="w-4 h-4 mr-1 text-yellow-500" />
-                Enviar email de confirmação
+                Send email confirmation
               </label>
             </div>
           </div>
@@ -188,13 +188,13 @@ const AddVaccinationModal: React.FC<AddVaccinationModalProps> = ({
               onClick={handleClose}
               className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Registrar Vacina
+              Register Vaccine
             </button>
           </div>
         </form>

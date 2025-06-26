@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { User, Settings, CreditCard, Bell, HelpCircle, LogOut, Shield, Star } from 'lucide-react';
+import { User, Settings, CreditCard, Bell, HelpCircle, LogOut, Shield, Star, Crown } from 'lucide-react';
 import { User as UserType } from '../types/pet';
+import { usePremiumAccess } from '../hooks/usePremiumAccess';
+import { toast } from 'sonner';
 
 interface ProfilePageProps {
   user: UserType;
@@ -16,16 +18,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onManageSubscription,
   onLogout 
 }) => {
+  const { isPremium, status, openCustomerPortal } = usePremiumAccess(user.email);
+
   const getSubscriptionStatus = () => {
-    switch (user.subscriptionStatus) {
+    switch (status) {
       case 'trial':
         return { text: 'Free Trial', color: 'bg-blue-100 text-blue-800', icon: '🆓' };
       case 'active':
         return { text: 'Premium', color: 'bg-green-100 text-green-800', icon: '⭐' };
-      case 'cancelled':
-        return { text: 'Cancelled', color: 'bg-yellow-100 text-yellow-800', icon: '⚠️' };
-      case 'expired':
-        return { text: 'Expired', color: 'bg-red-100 text-red-800', icon: '❌' };
+      case 'inactive':
+        return { text: 'Inactive', color: 'bg-red-100 text-red-800', icon: '❌' };
       default:
         return { text: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: '❓' };
     }
@@ -33,16 +35,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const subscription = getSubscriptionStatus();
 
-  const calculateTrialDaysLeft = () => {
-    if (user.subscriptionStatus !== 'trial') return 0;
-    
-    const trialStart = new Date(user.trialStartDate);
-    const now = new Date();
-    const daysPassed = Math.floor((now.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, 7 - daysPassed);
+  const handleManageSubscription = () => {
+    if (isPremium && status === 'active') {
+      openCustomerPortal();
+    } else {
+      toast.info('Subscription management not available');
+    }
   };
-
-  const trialDaysLeft = calculateTrialDaysLeft();
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
@@ -50,7 +49,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="pet-card bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="flex items-center mb-4">
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
-            <User size={32} className="text-white" />
+            {user.photoUrl ? (
+              <img 
+                src={user.photoUrl} 
+                alt={user.name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User size={32} className="text-white" />
+            )}
           </div>
           <div>
             <h1 className="text-2xl font-bold">{user.name}</h1>
@@ -63,24 +70,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <span className="mr-1">{subscription.icon}</span>
             {subscription.text}
           </div>
-          {user.subscriptionStatus === 'trial' && (
+          {status === 'trial' && (
             <div className="text-right">
-              <div className="text-sm text-primary-foreground/80">Trial ends in</div>
-              <div className="text-lg font-bold">{trialDaysLeft} days</div>
+              <div className="text-sm text-primary-foreground/80">Trial Active</div>
+              <div className="text-lg font-bold">Premium Features</div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Trial Alert */}
-      {user.subscriptionStatus === 'trial' && trialDaysLeft <= 3 && (
+      {/* Premium Status */}
+      {isPremium && (
         <div className="pet-card bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400">
           <div className="flex items-center">
-            <Star className="text-yellow-500 mr-3" size={24} />
+            <Crown className="text-yellow-500 mr-3" size={24} />
             <div>
-              <h3 className="font-semibold text-yellow-800">Trial ending soon!</h3>
+              <h3 className="font-semibold text-yellow-800">PetCare Premium Active</h3>
               <p className="text-sm text-yellow-700">
-                Upgrade to Premium for just $49/month to keep all your pet data.
+                {status === 'trial' ? 'Free trial - $9.99/month after trial ends' : 'Premium subscription - $9.99/month'}
               </p>
             </div>
           </div>
@@ -104,7 +111,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           </button>
           
           <button
-            onClick={onManageSubscription}
+            onClick={handleManageSubscription}
             className="profile-menu-item"
           >
             <CreditCard size={20} className="text-gray-500" />
@@ -163,6 +170,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <span className="font-medium">
               {new Date(user.trialStartDate).toLocaleDateString()}
             </span>
+          </div>
+          
+          <div className="flex justify-between">
+            <span className="text-gray-600">Plan:</span>
+            <span className="font-medium">{subscription.text}</span>
           </div>
         </div>
       </div>

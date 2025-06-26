@@ -119,6 +119,39 @@ export type Database = {
           },
         ]
       }
+      premium_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          next_payment: string
+          start_date: string
+          status: string
+          stripe_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          next_payment: string
+          start_date?: string
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          next_payment?: string
+          start_date?: string
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reminders: {
         Row: {
           completed: boolean
@@ -187,11 +220,13 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_premium: boolean | null
           name: string
           phone: string | null
           photo_url: string | null
           subscription_end_date: string | null
           subscription_status: string
+          trial_ends_at: string | null
           trial_start_date: string
           updated_at: string
         }
@@ -199,11 +234,13 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          is_premium?: boolean | null
           name: string
           phone?: string | null
           photo_url?: string | null
           subscription_end_date?: string | null
           subscription_status?: string
+          trial_ends_at?: string | null
           trial_start_date?: string
           updated_at?: string
         }
@@ -211,11 +248,13 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_premium?: boolean | null
           name?: string
           phone?: string | null
           photo_url?: string | null
           subscription_end_date?: string | null
           subscription_status?: string
+          trial_ends_at?: string | null
           trial_start_date?: string
           updated_at?: string
         }
