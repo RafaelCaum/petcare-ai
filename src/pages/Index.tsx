@@ -263,7 +263,7 @@ const Index = () => {
 
   // Show mandatory trial expired modal if trial expired and not premium
   if (status === 'expired') {
-    return <TrialExpiredModal onUpgrade={createCheckoutSession} />;
+    return <TrialExpiredModal />;
   }
 
   console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);

@@ -1,67 +1,76 @@
 
 import React from 'react';
-import { Crown, ArrowRight } from 'lucide-react';
+import { Crown } from 'lucide-react';
 
-interface TrialExpiredModalProps {
-  onUpgrade: () => void;
-}
+const TrialExpiredModal: React.FC = () => {
+  const handleUpgrade = () => {
+    window.open('https://buy.stripe.com/aFa8wR50A5xH5eicsT67S0j', '_blank');
+  };
 
-const TrialExpiredModal: React.FC<TrialExpiredModalProps> = ({ onUpgrade }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 mx-4">
-        <div className="text-center mb-8">
-          <div className="mb-4">
-            <Crown className="w-16 h-16 mx-auto text-yellow-500" />
+    <div className="fixed inset-0 z-50 bg-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center space-y-8">
+        {/* Logo do PetCare AI */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Crown className="w-8 h-8 text-purple-600" />
+            <h1 className="text-2xl font-bold text-gray-800">PetCare AI</h1>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Your Free Trial Has Ended
-          </h1>
-          <p className="text-gray-600">
-            To continue using PetCare AI, please upgrade to our Premium plan.
+        </div>
+
+        {/* Título Principal */}
+        <div className="space-y-4">
+          <h2 className="text-3xl font-bold text-gray-800">
+            🎉 PetCare AI Premium
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Seu período de teste terminou. Continue cuidando do seu pet com acesso total às funcionalidades do PetCare AI.
           </p>
         </div>
 
-        <div className="mb-8">
-          <div className="text-center mb-6">
-            <div className="text-4xl font-bold text-gray-800">R$ 9,99</div>
-            <div className="text-gray-600">per month</div>
-            <div className="text-sm text-blue-600 font-medium mt-1">
-              Instant access after payment
-            </div>
+        {/* Preço */}
+        <div className="space-y-2">
+          <div className="text-4xl font-bold text-gray-800">
+            💰 $9.99/month
           </div>
-
-          <div className="space-y-3 mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Unlimited pets</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Advanced vaccination tracking</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Email reminders and notifications</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Expense tracking and reports</span>
-            </div>
-          </div>
+          <p className="text-sm text-gray-500">
+            Secure payment via Stripe
+          </p>
+          <p className="text-sm text-green-600 font-medium">
+            🔒 Pagamento 100% seguro com Stripe
+          </p>
         </div>
 
-        <button
-          onClick={onUpgrade}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
-        >
-          <span>Upgrade Now</span>
-          <ArrowRight className="w-5 h-5" />
-        </button>
+        {/* Botão de Upgrade */}
+        <div className="pt-4">
+          <button
+            onClick={handleUpgrade}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+            style={{ backgroundColor: '#6C63FF' }}
+          >
+            👉 Upgrade Now 👈
+          </button>
+        </div>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Cancel anytime. Secure payment via Stripe.
-        </p>
+        {/* Benefícios */}
+        <div className="pt-6 space-y-3">
+          <div className="flex items-center justify-center space-x-2 text-gray-600">
+            <span className="text-green-500">✅</span>
+            <span>Pets ilimitados</span>
+          </div>
+          <div className="flex items-center justify-center space-x-2 text-gray-600">
+            <span className="text-green-500">✅</span>
+            <span>Controle completo de vacinas</span>
+          </div>
+          <div className="flex items-center justify-center space-x-2 text-gray-600">
+            <span className="text-green-500">✅</span>
+            <span>Lembretes e notificações</span>
+          </div>
+          <div className="flex items-center justify-center space-x-2 text-gray-600">
+            <span className="text-green-500">✅</span>
+            <span>Controle de gastos</span>
+          </div>
+        </div>
       </div>
     </div>
   );
