@@ -35,10 +35,6 @@ const PetPageWithVetDirectory: React.FC<PetPageWithVetDirectoryProps> = ({
   };
 
   const getVaccinationStatus = (vaccination: Vaccination) => {
-    if (vaccination.completed) {
-      return { status: 'completed', color: 'text-green-600', bg: 'bg-green-100' };
-    }
-    
     const today = new Date();
     const dueDate = new Date(vaccination.nextDueDate);
     const diffTime = dueDate.getTime() - today.getTime();
@@ -105,7 +101,7 @@ const PetPageWithVetDirectory: React.FC<PetPageWithVetDirectoryProps> = ({
             <Card>
               <CardHeader className="text-center">
                 <div className="mx-auto mb-4">
-                  <PetAvatar pet={selectedPet} size="lg" />
+                  <PetAvatar pet={selectedPet} size="large" />
                 </div>
                 <CardTitle className="text-2xl">{selectedPet.name}</CardTitle>
                 <p className="text-gray-600 capitalize">{selectedPet.breed} • {selectedPet.type}</p>
