@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -14,6 +13,7 @@ import AddReminderModal from '../components/AddReminderModal';
 import AddExpenseModal from '../components/AddExpenseModal';
 import ZapierIntegration from '../components/ZapierIntegration';
 import PremiumUpgrade from '../components/PremiumUpgrade';
+import TrialExpiredModal from '../components/TrialExpiredModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { usePremiumAccess } from '../hooks/usePremiumAccess';
 import { User, Pet } from '../types/pet';
@@ -261,9 +261,9 @@ const Index = () => {
     return <SplashScreen isVisible={true} />;
   }
 
-  // Show premium upgrade if trial expired and not premium
-  if (trialExpired && status !== 'active') {
-    return <PremiumUpgrade onUpgrade={createCheckoutSession} trialExpired={true} />;
+  // Show mandatory trial expired modal if trial expired and not premium
+  if (status === 'expired') {
+    return <TrialExpiredModal onUpgrade={createCheckoutSession} />;
   }
 
   console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);

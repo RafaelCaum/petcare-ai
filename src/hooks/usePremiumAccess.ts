@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 interface PremiumStatus {
   isPremium: boolean;
-  status: 'free' | 'active' | 'inactive';
+  status: 'free' | 'active' | 'expired';
   trialDaysLeft: number;
   trialExpired: boolean;
   loading: boolean;
@@ -14,7 +14,7 @@ interface PremiumStatus {
 export const usePremiumAccess = (userEmail: string | null) => {
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({
     isPremium: false,
-    status: 'inactive',
+    status: 'free',
     trialDaysLeft: 0,
     trialExpired: false,
     loading: true
@@ -41,7 +41,7 @@ export const usePremiumAccess = (userEmail: string | null) => {
       
       setPremiumStatus({
         isPremium: data.isPremium || false,
-        status: data.status || 'inactive',
+        status: data.status || 'free',
         trialDaysLeft: data.trialDaysLeft || 0,
         trialExpired: data.trialExpired || false,
         loading: false

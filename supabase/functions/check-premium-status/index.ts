@@ -42,7 +42,7 @@ serve(async (req) => {
     // Check if user exists in users table, if not create with free trial
     const { data: userRecord, error: userCheckError } = await supabaseClient
       .from('users')
-      .select('trial_ends_at, is_premium')
+      .select('trial_ends_at, is_premium, created_at')
       .eq('email', user.email)
       .single();
 
@@ -81,14 +81,28 @@ serve(async (req) => {
       .eq('email', user.email)
       .single();
 
-    const isPremium = premiumUser?.status === 'active';
-    const status = isPremium ? 'active' : (trialExpired ? 'inactive' : 'free');
+    const isPremiumActive = premiumUser?.status === 'active';
+    
+    // Determine final status
+    let finalStatus: 'free' | 'active' | 'expired';
+    let isPremium: boolean;
 
-    logStep("Final status", { isPremium, status, daysLeft });
+    if (isPremiumActive) {
+      finalStatus = 'active';
+      isPremium = true;
+    } else if (trialExpired) {
+      finalStatus = 'expired';
+      isPremium = false;
+    } else {
+      finalStatus = 'free';
+      isPremium = true; // Still in trial, so has access
+    }
+
+    logStep("Final status", { isPremium, finalStatus, daysLeft });
 
     return new Response(JSON.stringify({
-      isPremium: isPremium || !trialExpired,
-      status,
+      isPremium,
+      status: finalStatus,
       trialDaysLeft: Math.max(0, daysLeft),
       trialExpired
     }), {

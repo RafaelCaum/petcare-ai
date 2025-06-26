@@ -26,8 +26,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         return { text: 'Free Trial', color: 'bg-blue-100 text-blue-800', icon: '🆓' };
       case 'active':
         return { text: 'Premium', color: 'bg-green-100 text-green-800', icon: '⭐' };
-      case 'inactive':
-        return { text: 'Inactive', color: 'bg-red-100 text-red-800', icon: '❌' };
+      case 'expired':
+        return { text: 'Trial Expired', color: 'bg-red-100 text-red-800', icon: '❌' };
       default:
         return { text: 'Unknown', color: 'bg-gray-100 text-gray-800', icon: '❓' };
     }
@@ -82,14 +82,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       </div>
 
       {/* Premium Status */}
-      {isPremium && (
+      {isPremium && status === 'active' && (
         <div className="pet-card bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400">
           <div className="flex items-center">
             <Crown className="text-yellow-500 mr-3" size={24} />
             <div>
               <h3 className="font-semibold text-yellow-800">PetCare Premium Active</h3>
               <p className="text-sm text-yellow-700">
-                {status === 'free' ? 'Free trial - $9.99/month after trial ends' : 'Premium subscription - $9.99/month'}
+                Premium subscription - R$ 9,99/month
               </p>
             </div>
           </div>
