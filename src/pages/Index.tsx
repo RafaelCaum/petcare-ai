@@ -127,18 +127,27 @@ const Index = () => {
 
   const handleSavePet = async (petData: any) => {
     try {
+      console.log('=== HANDLE SAVE PET ===');
+      console.log('Selected pet for modal:', selectedPetForModal);
+      console.log('Pet data to save:', petData);
+
       if (selectedPetForModal) {
-        // Se existe um pet selecionado, é uma atualização
-        console.log('Updating existing pet:', selectedPetForModal.id);
+        // É uma atualização
+        console.log('Updating existing pet with ID:', selectedPetForModal.id);
         await updatePet(selectedPetForModal.id, petData);
         toast.success('Pet atualizado com sucesso!');
       } else {
-        // Se não existe pet selecionado, é uma criação
+        // É uma criação
         console.log('Creating new pet');
         await addPet(petData);
         toast.success('Pet adicionado com sucesso!');
       }
+      
+      // Limpar estado e forçar refresh dos dados
       setSelectedPetForModal(undefined);
+      console.log('Refreshing data after save...');
+      await refetch();
+      
     } catch (error) {
       console.error('Error saving pet:', error);
       toast.error('Erro ao salvar pet');
@@ -438,6 +447,7 @@ const Index = () => {
           pet={selectedPetForModal}
           isOpen={editPetModalOpen}
           onClose={() => {
+            console.log('Closing EditPetModal, clearing selectedPetForModal');
             setEditPetModalOpen(false);
             setSelectedPetForModal(undefined);
           }}

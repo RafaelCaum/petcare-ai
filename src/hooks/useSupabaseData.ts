@@ -416,49 +416,71 @@ export const useSupabaseData = (userEmail: string | null) => {
   };
 
   const updatePet = async (petId: string, petData: Omit<Pet, 'id'>) => {
-    if (!userEmail) return;
+    if (!userEmail) {
+      console.error('No user email available for updatePet');
+      return;
+    }
 
     try {
-      console.log('Updating pet with ID:', petId, 'Data:', petData);
+      console.log('=== UPDATING PET ===');
+      console.log('Pet ID:', petId);
+      console.log('Pet Data:', petData);
+      console.log('User Email:', userEmail);
       
+      const updateData = {
+        name: petData.name,
+        type: petData.type,
+        breed: petData.breed || null,
+        birth_date: petData.birthDate || null,
+        gender: petData.gender || null,
+        weight: petData.weight || null,
+        color: petData.color || null,
+        avatar: petData.avatar,
+        photo_url: petData.photoUrl || null,
+      };
+
+      console.log('Update data being sent to Supabase:', updateData);
+
       const { data, error } = await supabase
         .from('pets')
-        .update({
-          name: petData.name,
-          type: petData.type,
-          breed: petData.breed,
-          birth_date: petData.birthDate,
-          gender: petData.gender,
-          weight: petData.weight,
-          color: petData.color,
-          avatar: petData.avatar,
-          photo_url: petData.photoUrl,
-        })
+        .update(updateData)
         .eq('id', petId)
         .eq('user_email', userEmail)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Supabase update successful:', data);
 
       const updatedPet: Pet = {
         id: data.id,
         name: data.name,
         type: data.type as 'dog' | 'cat',
-        breed: data.breed,
-        birthDate: data.birth_date,
+        breed: data.breed || '',
+        birthDate: data.birth_date || '',
         avatar: data.avatar || '🐕',
-        weight: data.weight,
-        color: data.color,
-        gender: data.gender as 'male' | 'female',
-        photoUrl: data.photo_url,
+        weight: data.weight || 0,
+        color: data.color || '',
+        gender: data.gender as 'male' | 'female' || 'male',
+        photoUrl: data.photo_url || undefined,
       };
 
-      setPets(prev => prev.map(pet => 
-        pet.id === petId ? updatedPet : pet
-      ));
+      console.log('Updated pet object:', updatedPet);
 
-      console.log('Pet updated successfully:', updatedPet);
+      // Update local state
+      setPets(prev => {
+        const newPets = prev.map(pet => 
+          pet.id === petId ? updatedPet : pet
+        );
+        console.log('Updated pets state:', newPets);
+        return newPets;
+      });
+
+      console.log('=== PET UPDATE COMPLETED ===');
       return updatedPet;
     } catch (error) {
       console.error('Error updating pet:', error);
