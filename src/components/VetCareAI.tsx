@@ -163,13 +163,13 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
                 value={pergunta}
                 onChange={(e) => setPergunta(e.target.value)}
                 placeholder="Digite sua dúvida como se estivesse falando com um veterinário…"
-                className="pr-12 border-gray-200 focus:border-blue-300 focus:ring-blue-200"
+                className="pr-12 bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-100 text-gray-800"
                 onKeyPress={(e) => e.key === 'Enter' && handleSubmit(pergunta)}
               />
               <Button
                 onClick={() => handleSubmit(pergunta)}
                 disabled={isLoading || !pergunta.trim()}
-                className="absolute right-1 top-1 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700"
+                className="absolute right-1 top-1 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
               >
                 <Send className="w-4 h-4" />
