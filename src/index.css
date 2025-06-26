@@ -27,8 +27,8 @@
     --muted: 248 250 252;
     --muted-foreground: 100 116 139;
 
-    --accent: 251 191 36;
-    --accent-foreground: 31 41 55;
+    --accent: 99 102 241;
+    --accent-foreground: 255 255 255;
 
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
@@ -68,7 +68,7 @@
     --muted: 30 41 59;
     --muted-foreground: 148 163 184;
 
-    --accent: 252 211 77;
+    --accent: 129 140 248;
     --accent-foreground: 15 23 42;
 
     --destructive: 248 113 113;

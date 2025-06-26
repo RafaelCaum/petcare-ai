@@ -36,10 +36,10 @@ export default {
 					foreground: '#334155'
 				},
 				accent: {
-					DEFAULT: '#fbbf24',
-					light: '#fcd34d',
-					dark: '#f59e0b',
-					foreground: '#1f2937'
+					DEFAULT: '#6366f1',
+					light: '#818cf8',
+					dark: '#4f46e5',
+					foreground: '#ffffff'
 				},
 				success: {
 					DEFAULT: '#10b981',
@@ -47,9 +47,9 @@ export default {
 					dark: '#059669'
 				},
 				warning: {
-					DEFAULT: '#f59e0b',
-					light: '#fbbf24',
-					dark: '#d97706'
+					DEFAULT: '#6366f1',
+					light: '#818cf8',
+					dark: '#4f46e5'
 				},
 				danger: {
 					DEFAULT: '#ef4444',
