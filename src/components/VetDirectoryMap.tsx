@@ -20,7 +20,8 @@ const VetDirectoryMap = () => {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
-  const [selectedDistance, setSelectedDistance] = useState('5000'); // 5km default
+  const [selectedDistance, setSelectedDistance] = useState('3219'); // 2 miles in meters
+  const [apiKey, setApiKey] = useState('');
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -33,20 +34,49 @@ const VetDirectoryMap = () => {
         },
         (error) => {
           console.error('Error getting location:', error);
-          // Fallback to a default location (São Paulo, Brazil)
-          setUserLocation({ lat: -23.5505, lon: -46.6333 });
+          // Fallback to Miami, FL
+          setUserLocation({ lat: 25.7617, lon: -80.1918 });
         }
       );
     } else {
-      // Fallback to a default location
-      setUserLocation({ lat: -23.5505, lon: -46.6333 });
+      // Fallback to Miami, FL
+      setUserLocation({ lat: 25.7617, lon: -80.1918 });
     }
   };
 
   const fetchVeterinaryClinics = async (lat: number, lon: number, radius: string) => {
+    if (!apiKey) {
+      console.log('No API key provided. Using fallback data.');
+      // Fallback data for demonstration
+      setClinics([
+        {
+          id: '1',
+          name: 'Miami Veterinary Clinic',
+          address: '123 Biscayne Blvd, Miami, FL 33132',
+          distance: 0.5,
+          phone: '(305) 123-4567',
+          rating: 4.5,
+          hours: 'Mon-Fri: 8AM-6PM',
+          lat: 25.7617,
+          lon: -80.1918
+        },
+        {
+          id: '2',
+          name: 'Coral Gables Animal Hospital',
+          address: '456 Miracle Mile, Coral Gables, FL 33134',
+          distance: 1.2,
+          phone: '(305) 987-6543',
+          rating: 4.8,
+          hours: '24/7 Emergency',
+          lat: 25.7214,
+          lon: -80.2683
+        }
+      ]);
+      return;
+    }
+
     setLoading(true);
     try {
-      const apiKey = 'your-geoapify-api-key'; // You'll need to set this
       const url = `https://api.geoapify.com/v2/places?categories=healthcare.veterinary&filter=circle:${lon},${lat},${radius}&bias=proximity:${lon},${lat}&limit=20&apiKey=${apiKey}`;
       
       const response = await fetch(url);
@@ -57,7 +87,7 @@ const VetDirectoryMap = () => {
           id: feature.properties.place_id || `clinic-${index}`,
           name: feature.properties.name || 'Veterinary Clinic',
           address: feature.properties.formatted || feature.properties.address_line1 || 'Address not available',
-          distance: Math.round(feature.properties.distance || 0),
+          distance: Math.round((feature.properties.distance || 0) * 0.000621371), // Convert meters to miles
           phone: feature.properties.contact?.phone,
           rating: feature.properties.rating,
           hours: feature.properties.opening_hours,
@@ -73,25 +103,25 @@ const VetDirectoryMap = () => {
       setClinics([
         {
           id: '1',
-          name: 'Central Veterinary Clinic',
-          address: 'Rua das Flores, 123 - Centro',
-          distance: 800,
-          phone: '(11) 1234-5678',
+          name: 'Miami Veterinary Clinic',
+          address: '123 Biscayne Blvd, Miami, FL 33132',
+          distance: 0.5,
+          phone: '(305) 123-4567',
           rating: 4.5,
           hours: 'Mon-Fri: 8AM-6PM',
-          lat: -23.5505,
-          lon: -46.6333
+          lat: 25.7617,
+          lon: -80.1918
         },
         {
           id: '2',
-          name: 'Pet Care Hospital',
-          address: 'Av. Paulista, 456 - Bela Vista',
-          distance: 1200,
-          phone: '(11) 9876-5432',
+          name: 'Coral Gables Animal Hospital',
+          address: '456 Miracle Mile, Coral Gables, FL 33134',
+          distance: 1.2,
+          phone: '(305) 987-6543',
           rating: 4.8,
           hours: '24/7 Emergency',
-          lat: -23.5616,
-          lon: -46.6565
+          lat: 25.7214,
+          lon: -80.2683
         }
       ]);
     } finally {
@@ -107,21 +137,39 @@ const VetDirectoryMap = () => {
     if (userLocation) {
       fetchVeterinaryClinics(userLocation.lat, userLocation.lon, selectedDistance);
     }
-  }, [userLocation, selectedDistance]);
+  }, [userLocation, selectedDistance, apiKey]);
 
   const handleDistanceChange = (value: string) => {
     setSelectedDistance(value);
   };
 
-  const getDistanceLabel = (meters: number) => {
-    if (meters < 1000) {
-      return `${meters}m`;
+  const getDistanceLabel = (miles: number) => {
+    if (miles < 1) {
+      return `${(miles * 5280).toFixed(0)}ft`;
     }
-    return `${(meters / 1000).toFixed(1)}km`;
+    return `${miles.toFixed(1)}mi`;
   };
 
   return (
     <div className="space-y-4">
+      {/* API Key Input */}
+      {!apiKey && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800 mb-2">
+            Enter your Geoapify API key to fetch real veterinary clinics:
+          </p>
+          <input
+            type="text"
+            placeholder="Enter your Geoapify API key"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <p className="text-xs text-yellow-600 mt-1">
+            Get your free API key at <a href="https://geoapify.com" target="_blank" rel="noopener noreferrer" className="underline">geoapify.com</a>
+          </p>
+        </div>
+      )}
+
       {/* Distance Filter */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Nearby Veterinary Clinics</h3>
@@ -130,9 +178,9 @@ const VetDirectoryMap = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1000">1km</SelectItem>
-            <SelectItem value="5000">5km</SelectItem>
-            <SelectItem value="10000">10km</SelectItem>
+            <SelectItem value="1609">1mi</SelectItem>
+            <SelectItem value="3219">2mi</SelectItem>
+            <SelectItem value="8047">5mi</SelectItem>
           </SelectContent>
         </Select>
       </div>
