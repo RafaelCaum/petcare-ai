@@ -52,23 +52,20 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "brl",
             product_data: { 
               name: "PetCare Premium",
               description: "Premium pet care management with unlimited features"
             },
-            unit_amount: 999, // $9.99
+            unit_amount: 999, // R$ 9.99
             recurring: { interval: "month" },
           },
           quantity: 1,
         },
       ],
       mode: "subscription",
-      subscription_data: {
-        trial_period_days: 7,
-      },
       success_url: `${req.headers.get("origin")}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/pricing`,
+      cancel_url: `${req.headers.get("origin")}/`,
     });
 
     logStep("Checkout session created", { sessionId: session.id });

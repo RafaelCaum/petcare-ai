@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -55,6 +56,8 @@ const Index = () => {
   const { 
     isPremium, 
     status, 
+    trialDaysLeft,
+    trialExpired,
     loading: premiumLoading, 
     createCheckoutSession,
     checkPremiumStatus 
@@ -258,9 +261,9 @@ const Index = () => {
     return <SplashScreen isVisible={true} />;
   }
 
-  // Show premium upgrade if user doesn't have access
-  if (!isPremium && status !== 'trial') {
-    return <PremiumUpgrade onUpgrade={createCheckoutSession} />;
+  // Show premium upgrade if trial expired and not premium
+  if (trialExpired && status !== 'active') {
+    return <PremiumUpgrade onUpgrade={createCheckoutSession} trialExpired={true} />;
   }
 
   console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);
@@ -332,11 +335,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto bg-white min-h-screen relative">
-        {/* Premium Status Indicator */}
-        {status === 'trial' && (
-          <div className="bg-yellow-100 border-l-4 border-yellow-400 p-2 text-sm">
-            <p className="text-yellow-800">
-              Free trial active - Upgrade to continue after trial ends
+        {/* Free Trial Status Indicator */}
+        {status === 'free' && !trialExpired && (
+          <div className="bg-blue-100 border-l-4 border-blue-400 p-2 text-sm">
+            <p className="text-blue-800">
+              Free trial: Day {8 - trialDaysLeft} of 7 - {trialDaysLeft} days left
             </p>
           </div>
         )}

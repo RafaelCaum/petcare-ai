@@ -39,84 +39,58 @@ serve(async (req) => {
     
     logStep("User authenticated", { email: user.email });
 
-    // Check trial period first
-    const { data: userRecord } = await supabaseClient
+    // Check if user exists in users table, if not create with free trial
+    const { data: userRecord, error: userCheckError } = await supabaseClient
       .from('users')
       .select('trial_ends_at, is_premium')
       .eq('email', user.email)
       .single();
 
+    if (userCheckError && userCheckError.code !== 'PGRST116') {
+      throw new Error(`Error checking user: ${userCheckError.message}`);
+    }
+
     const now = new Date();
-    const trialEndsAt = userRecord?.trial_ends_at ? new Date(userRecord.trial_ends_at) : null;
-    const isInTrial = trialEndsAt && now < trialEndsAt;
-
-    logStep("Trial check", { isInTrial, trialEndsAt });
-
-    if (isInTrial) {
-      return new Response(JSON.stringify({
-        isPremium: true,
-        status: 'trial',
-        trialEndsAt: trialEndsAt?.toISOString()
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // Check Stripe subscription
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    let trialEndsAt = userRecord?.trial_ends_at ? new Date(userRecord.trial_ends_at) : null;
     
-    if (customers.data.length === 0) {
-      logStep("No customer found");
-      await supabaseClient.from("users").update({
-        is_premium: false
-      }).eq("email", user.email);
-
-      return new Response(JSON.stringify({ isPremium: false, status: 'inactive' }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    const hasActiveSubscription = subscriptions.data.length > 0;
-    let nextPayment = null;
-
-    if (hasActiveSubscription) {
-      const subscription = subscriptions.data[0];
-      nextPayment = new Date(subscription.current_period_end * 1000).toISOString();
+    // If user doesn't exist or doesn't have trial set, create/update with 7-day trial
+    if (!userRecord || !trialEndsAt) {
+      trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 7);
       
-      // Update premium_users table
-      await supabaseClient.from("premium_users").upsert({
+      await supabaseClient.from('users').upsert({
         email: user.email,
-        stripe_customer_id: customerId,
-        status: 'active',
-        next_payment: nextPayment,
-        updated_at: new Date().toISOString(),
+        trial_ends_at: trialEndsAt.toISOString(),
+        is_premium: false
       }, { onConflict: 'email' });
+      
+      logStep("Created/updated user with trial", { trialEndsAt });
     }
 
-    // Update users table
-    await supabaseClient.from("users").update({
-      is_premium: hasActiveSubscription
-    }).eq("email", user.email);
+    // Calculate days left in trial
+    const timeDiff = trialEndsAt.getTime() - now.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    const trialExpired = daysLeft <= 0;
 
-    logStep("Premium status updated", { isPremium: hasActiveSubscription });
+    logStep("Trial calculation", { daysLeft, trialExpired });
+
+    // Check premium status from premium_users table
+    const { data: premiumUser } = await supabaseClient
+      .from('premium_users')
+      .select('status')
+      .eq('email', user.email)
+      .single();
+
+    const isPremium = premiumUser?.status === 'active';
+    const status = isPremium ? 'active' : (trialExpired ? 'inactive' : 'free');
+
+    logStep("Final status", { isPremium, status, daysLeft });
 
     return new Response(JSON.stringify({
-      isPremium: hasActiveSubscription,
-      status: hasActiveSubscription ? 'active' : 'inactive',
-      nextPayment
+      isPremium: isPremium || !trialExpired,
+      status,
+      trialDaysLeft: Math.max(0, daysLeft),
+      trialExpired
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
