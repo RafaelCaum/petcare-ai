@@ -155,8 +155,8 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
       </div>
 
       {/* Question Input */}
-      <Card className="mb-6 border-blue-100 shadow-sm">
-        <CardContent className="p-4">
+      <Card className="mb-6 border-blue-100 shadow-sm bg-white">
+        <CardContent className="p-4 bg-white">
           <div className="space-y-4">
             <div className="relative">
               <Input
@@ -201,8 +201,8 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
 
       {/* Loading State */}
       {isLoading && (
-        <Card className="mb-6 border-blue-100">
-          <CardContent className="p-4">
+        <Card className="mb-6 border-blue-100 bg-white">
+          <CardContent className="p-4 bg-white">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-100"></div>
@@ -216,7 +216,7 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
       {/* AI Response */}
       {resposta && (
         <Card className="mb-6 bg-blue-50 border-blue-100">
-          <CardContent className="p-4">
+          <CardContent className="p-4 bg-blue-50">
             <div className="flex gap-3">
               <div className="bg-blue-600 p-2 rounded-full min-w-fit">
                 <Stethoscope className="w-4 h-4 text-white" />
@@ -238,8 +238,8 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
           <h3 className="text-sm font-medium text-gray-600 mb-3">Consultas recentes:</h3>
           <div className="space-y-2">
             {recentQueries.map((query) => (
-              <Card key={query.id} className="border-gray-100">
-                <CardContent className="p-3">
+              <Card key={query.id} className="border-gray-100 bg-white">
+                <CardContent className="p-3 bg-white">
                   <p className="text-sm text-gray-700 mb-1">{query.pergunta}</p>
                   <p className="text-xs text-gray-500">
                     {new Date(query.data).toLocaleDateString('pt-BR')}
