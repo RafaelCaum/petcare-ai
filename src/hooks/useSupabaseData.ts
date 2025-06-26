@@ -415,6 +415,57 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
+  const updatePet = async (petId: string, petData: Omit<Pet, 'id'>) => {
+    if (!userEmail) return;
+
+    try {
+      console.log('Updating pet with ID:', petId, 'Data:', petData);
+      
+      const { data, error } = await supabase
+        .from('pets')
+        .update({
+          name: petData.name,
+          type: petData.type,
+          breed: petData.breed,
+          birth_date: petData.birthDate,
+          gender: petData.gender,
+          weight: petData.weight,
+          color: petData.color,
+          avatar: petData.avatar,
+          photo_url: petData.photoUrl,
+        })
+        .eq('id', petId)
+        .eq('user_email', userEmail)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updatedPet: Pet = {
+        id: data.id,
+        name: data.name,
+        type: data.type as 'dog' | 'cat',
+        breed: data.breed,
+        birthDate: data.birth_date,
+        avatar: data.avatar || '🐕',
+        weight: data.weight,
+        color: data.color,
+        gender: data.gender as 'male' | 'female',
+        photoUrl: data.photo_url,
+      };
+
+      setPets(prev => prev.map(pet => 
+        pet.id === petId ? updatedPet : pet
+      ));
+
+      console.log('Pet updated successfully:', updatedPet);
+      return updatedPet;
+    } catch (error) {
+      console.error('Error updating pet:', error);
+      throw error;
+    }
+  };
+
   const deletePet = async (petId: string) => {
     if (!userEmail) return;
 
@@ -648,6 +699,7 @@ export const useSupabaseData = (userEmail: string | null) => {
     addExpense,
     addReminder,
     addPet,
+    updatePet,
     deletePet,
     deleteExpense,
     updateUser,

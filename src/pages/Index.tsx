@@ -42,6 +42,7 @@ const Index = () => {
     addExpense, 
     addReminder, 
     addPet, 
+    updatePet,
     deletePet,
     deleteExpense,
     updateUser, 
@@ -126,11 +127,21 @@ const Index = () => {
 
   const handleSavePet = async (petData: any) => {
     try {
-      await addPet(petData);
+      if (selectedPetForModal) {
+        // Se existe um pet selecionado, é uma atualização
+        console.log('Updating existing pet:', selectedPetForModal.id);
+        await updatePet(selectedPetForModal.id, petData);
+        toast.success('Pet atualizado com sucesso!');
+      } else {
+        // Se não existe pet selecionado, é uma criação
+        console.log('Creating new pet');
+        await addPet(petData);
+        toast.success('Pet adicionado com sucesso!');
+      }
       setSelectedPetForModal(undefined);
-      toast.success('Pet added successfully!');
     } catch (error) {
-      toast.error('Error adding pet');
+      console.error('Error saving pet:', error);
+      toast.error('Erro ao salvar pet');
     }
   };
 
