@@ -1,4 +1,3 @@
-
 export interface Pet {
   id: string;
   name: string;
@@ -10,6 +9,11 @@ export interface Pet {
   color?: string;
   gender?: 'male' | 'female';
   photoUrl?: string;
+  vacinadoStatus?: 'sim' | 'nao' | 'nao_sei';
+  dataUltimaVacina?: string;
+  temperamento?: 'calmo' | 'medroso' | 'bravo';
+  temCondicao?: boolean;
+  qualCondicao?: string;
 }
 
 export interface Reminder {

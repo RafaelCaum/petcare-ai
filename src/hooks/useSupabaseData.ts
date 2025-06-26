@@ -37,257 +37,6 @@ export const useSupabaseData = (userEmail: string | null) => {
     fetchAllData();
   }, [userEmail]);
 
-  const fetchAllData = async () => {
-    if (!userEmail) {
-      console.log('No userEmail provided to fetchAllData');
-      return;
-    }
-
-    try {
-      console.log('Starting fetchAllData for:', userEmail);
-      setLoading(true);
-
-      // Fetch user data - only essential fields
-      console.log('Fetching user data...');
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, name, email, phone, photo_url, subscription_status, trial_start_date, subscription_end_date')
-        .eq('email', userEmail)
-        .single();
-
-      if (userError) {
-        console.error('Error fetching user:', userError);
-      } else if (userData) {
-        console.log('User data fetched successfully:', userData);
-        const userDataWithPhoto = userData as UserWithPhoto;
-        setUser({
-          id: userDataWithPhoto.id,
-          name: userDataWithPhoto.name,
-          email: userDataWithPhoto.email,
-          phone: userDataWithPhoto.phone,
-          photoUrl: userDataWithPhoto.photo_url,
-          subscriptionStatus: userDataWithPhoto.subscription_status as 'trial' | 'active' | 'cancelled' | 'expired',
-          trialStartDate: userDataWithPhoto.trial_start_date,
-          subscriptionEndDate: userDataWithPhoto.subscription_end_date,
-        });
-      }
-
-      // Fetch pets - only essential fields
-      console.log('Fetching pets data...');
-      const { data: petsData, error: petsError } = await supabase
-        .from('pets')
-        .select('id, name, type, breed, birth_date, avatar, weight, color, gender, photo_url')
-        .eq('user_email', userEmail);
-
-      if (petsError) {
-        console.error('Error fetching pets:', petsError);
-      } else if (petsData) {
-        console.log('Pets data fetched successfully:', petsData);
-        setPets(petsData.map(pet => ({
-          id: pet.id,
-          name: pet.name,
-          type: pet.type as 'dog' | 'cat',
-          breed: pet.breed,
-          birthDate: pet.birth_date,
-          avatar: pet.avatar || '🐕',
-          weight: pet.weight,
-          color: pet.color,
-          gender: pet.gender as 'male' | 'female',
-          photoUrl: pet.photo_url,
-        })));
-      }
-
-      // Fetch reminders
-      console.log('Fetching reminders data...');
-      const { data: remindersData, error: remindersError } = await supabase
-        .from('reminders')
-        .select('*')
-        .eq('user_email', userEmail);
-
-      if (remindersError) {
-        console.error('Error fetching reminders:', remindersError);
-      } else if (remindersData) {
-        console.log('Reminders data fetched successfully:', remindersData);
-        setReminders(remindersData.map(reminder => ({
-          id: reminder.id,
-          petId: reminder.pet_id,
-          title: reminder.title,
-          type: reminder.type as 'vaccine' | 'vet' | 'grooming' | 'bath' | 'medication' | 'other',
-          date: reminder.date,
-          time: reminder.time,
-          notes: reminder.notes,
-          completed: reminder.completed,
-          emailReminder: reminder.email_reminder,
-          smsReminder: reminder.sms_reminder,
-        })));
-      }
-
-      // Fetch expenses
-      console.log('Fetching expenses data...');
-      const { data: expensesData, error: expensesError } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_email', userEmail);
-
-      if (expensesError) {
-        console.error('Error fetching expenses:', expensesError);
-      } else if (expensesData) {
-        console.log('Expenses data fetched successfully:', expensesData);
-        setExpenses(expensesData.map(expense => ({
-          id: expense.id,
-          petId: expense.pet_id,
-          amount: parseFloat(expense.amount.toString()),
-          category: expense.category as 'grooming' | 'vet' | 'food' | 'toys' | 'supplies' | 'medication' | 'other',
-          description: expense.description,
-          date: expense.date,
-          notes: expense.notes,
-        })));
-      }
-
-      // Fetch vaccinations
-      console.log('Fetching vaccinations data...');
-      const { data: vaccinationsData, error: vaccinationsError } = await supabase
-        .from('vaccinations')
-        .select('*')
-        .eq('user_email', userEmail);
-
-      if (vaccinationsError) {
-        console.error('Error fetching vaccinations:', vaccinationsError);
-      } else if (vaccinationsData) {
-        console.log('Vaccinations data fetched successfully:', vaccinationsData);
-        setVaccinations(vaccinationsData.map(vaccination => ({
-          id: vaccination.id,
-          petId: vaccination.pet_id,
-          vaccineName: vaccination.vaccine_name,
-          dateGiven: vaccination.date_given,
-          nextDueDate: vaccination.next_due_date,
-          veterinarian: vaccination.veterinarian,
-          notes: vaccination.notes,
-          imageUrl: vaccination.image_url,
-        })));
-      }
-
-      console.log('All data fetched successfully');
-    } catch (error) {
-      console.error('Error in fetchAllData:', error);
-    } finally {
-      console.log('Setting loading to false');
-      setLoading(false);
-    }
-  };
-
-  const uploadPetPhoto = async (file: File, petId?: string) => {
-    if (!userEmail) {
-      console.error('No user email available');
-      return null;
-    }
-
-    try {
-      console.log('Starting photo upload for pet:', petId || 'new pet');
-      
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${petId || 'temp'}-${Date.now()}.${fileExt}`;
-      const filePath = `${userEmail}/${fileName}`;
-
-      console.log('Uploading file to path:', filePath);
-
-      // Ensure the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const petPhotosBucket = buckets?.find(bucket => bucket.name === 'pet-photos');
-      
-      if (!petPhotosBucket) {
-        console.log('Creating pet-photos bucket...');
-        const { error: bucketError } = await supabase.storage.createBucket('pet-photos', {
-          public: true,
-          fileSizeLimit: 5242880, // 5MB
-          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
-        });
-        
-        if (bucketError) {
-          console.error('Error creating bucket:', bucketError);
-          throw bucketError;
-        }
-      }
-
-      const { error: uploadError } = await supabase.storage
-        .from('pet-photos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('pet-photos')
-        .getPublicUrl(filePath);
-
-      console.log('Generated public URL:', publicUrl);
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading pet photo:', error);
-      throw error;
-    }
-  };
-
-  const uploadUserPhoto = async (file: File) => {
-    if (!userEmail) {
-      console.error('No user email available');
-      return null;
-    }
-
-    try {
-      console.log('Starting user photo upload');
-      
-      const fileExt = file.name.split('.').pop();
-      const fileName = `profile-${Date.now()}.${fileExt}`;
-      const filePath = `${userEmail}/${fileName}`;
-
-      console.log('Uploading file to path:', filePath);
-
-      const { error: uploadError } = await supabase.storage
-        .from('user-photos')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('user-photos')
-        .getPublicUrl(filePath);
-
-      console.log('Generated public URL:', publicUrl);
-
-      // Update user with photo URL in database
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ photo_url: publicUrl } as { photo_url: string })
-        .eq('email', userEmail);
-
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        throw updateError;
-      }
-
-      console.log('Successfully updated user photo URL in database');
-
-      // Update local state immediately
-      setUser(prev => prev ? { ...prev, photoUrl: publicUrl } : null);
-
-      console.log('Updated local state with new photo URL');
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading user photo:', error);
-      throw error;
-    }
-  };
-
   const addPet = async (petData: Omit<Pet, 'id'>, photoFile?: File) => {
     if (!userEmail) return;
 
@@ -309,7 +58,12 @@ export const useSupabaseData = (userEmail: string | null) => {
           weight: petData.weight || null,
           color: petData.color || null,
           avatar: petData.avatar,
-          photo_url: null, // Initially null, will update if photo upload succeeds
+          photo_url: null,
+          vacinado_status: petData.vacinadoStatus || null,
+          data_ultima_vacina: petData.dataUltimaVacina || null,
+          temperamento: petData.temperamento || null,
+          tem_condicao: petData.temCondicao || false,
+          qual_condicao: petData.qualCondicao || null,
         })
         .select()
         .single();
@@ -361,6 +115,11 @@ export const useSupabaseData = (userEmail: string | null) => {
         color: data.color || '',
         gender: data.gender as 'male' | 'female' || 'male',
         photoUrl: finalPhotoUrl || undefined,
+        vacinadoStatus: data.vacinado_status as 'sim' | 'nao' | 'nao_sei' || undefined,
+        dataUltimaVacina: data.data_ultima_vacina || undefined,
+        temperamento: data.temperamento as 'calmo' | 'medroso' | 'bravo' || undefined,
+        temCondicao: data.tem_condicao || false,
+        qualCondicao: data.qual_condicao || undefined,
       };
 
       setPets(prev => [...prev, newPet]);
@@ -758,6 +517,262 @@ export const useSupabaseData = (userEmail: string | null) => {
       return updatedVaccination;
     } catch (error) {
       console.error('Error marking vaccination as completed:', error);
+      throw error;
+    }
+  };
+
+  const fetchAllData = async () => {
+    if (!userEmail) {
+      console.log('No userEmail provided to fetchAllData');
+      return;
+    }
+
+    try {
+      console.log('Starting fetchAllData for:', userEmail);
+      setLoading(true);
+
+      // Fetch user data - only essential fields
+      console.log('Fetching user data...');
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, name, email, phone, photo_url, subscription_status, trial_start_date, subscription_end_date')
+        .eq('email', userEmail)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user:', userError);
+      } else if (userData) {
+        console.log('User data fetched successfully:', userData);
+        const userDataWithPhoto = userData as UserWithPhoto;
+        setUser({
+          id: userDataWithPhoto.id,
+          name: userDataWithPhoto.name,
+          email: userDataWithPhoto.email,
+          phone: userDataWithPhoto.phone,
+          photoUrl: userDataWithPhoto.photo_url,
+          subscriptionStatus: userDataWithPhoto.subscription_status as 'trial' | 'active' | 'cancelled' | 'expired',
+          trialStartDate: userDataWithPhoto.trial_start_date,
+          subscriptionEndDate: userDataWithPhoto.subscription_end_date,
+        });
+      }
+
+      // Fetch pets - including new fields
+      console.log('Fetching pets data...');
+      const { data: petsData, error: petsError } = await supabase
+        .from('pets')
+        .select('id, name, type, breed, birth_date, avatar, weight, color, gender, photo_url, vacinado_status, data_ultima_vacina, temperamento, tem_condicao, qual_condicao')
+        .eq('user_email', userEmail);
+
+      if (petsError) {
+        console.error('Error fetching pets:', petsError);
+      } else if (petsData) {
+        console.log('Pets data fetched successfully:', petsData);
+        setPets(petsData.map(pet => ({
+          id: pet.id,
+          name: pet.name,
+          type: pet.type as 'dog' | 'cat',
+          breed: pet.breed,
+          birthDate: pet.birth_date,
+          avatar: pet.avatar || '🐕',
+          weight: pet.weight,
+          color: pet.color,
+          gender: pet.gender as 'male' | 'female',
+          photoUrl: pet.photo_url,
+          vacinadoStatus: pet.vacinado_status as 'sim' | 'nao' | 'nao_sei',
+          dataUltimaVacina: pet.data_ultima_vacina,
+          temperamento: pet.temperamento as 'calmo' | 'medroso' | 'bravo',
+          temCondicao: pet.tem_condicao,
+          qualCondicao: pet.qual_condicao,
+        })));
+      }
+
+      // Fetch reminders
+      console.log('Fetching reminders data...');
+      const { data: remindersData, error: remindersError } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('user_email', userEmail);
+
+      if (remindersError) {
+        console.error('Error fetching reminders:', remindersError);
+      } else if (remindersData) {
+        console.log('Reminders data fetched successfully:', remindersData);
+        setReminders(remindersData.map(reminder => ({
+          id: reminder.id,
+          petId: reminder.pet_id,
+          title: reminder.title,
+          type: reminder.type as 'vaccine' | 'vet' | 'grooming' | 'bath' | 'medication' | 'other',
+          date: reminder.date,
+          time: reminder.time,
+          notes: reminder.notes,
+          completed: reminder.completed,
+          emailReminder: reminder.email_reminder,
+          smsReminder: reminder.sms_reminder,
+        })));
+      }
+
+      // Fetch expenses
+      console.log('Fetching expenses data...');
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_email', userEmail);
+
+      if (expensesError) {
+        console.error('Error fetching expenses:', expensesError);
+      } else if (expensesData) {
+        console.log('Expenses data fetched successfully:', expensesData);
+        setExpenses(expensesData.map(expense => ({
+          id: expense.id,
+          petId: expense.pet_id,
+          amount: parseFloat(expense.amount.toString()),
+          category: expense.category as 'grooming' | 'vet' | 'food' | 'toys' | 'supplies' | 'medication' | 'other',
+          description: expense.description,
+          date: expense.date,
+          notes: expense.notes,
+        })));
+      }
+
+      // Fetch vaccinations
+      console.log('Fetching vaccinations data...');
+      const { data: vaccinationsData, error: vaccinationsError } = await supabase
+        .from('vaccinations')
+        .select('*')
+        .eq('user_email', userEmail);
+
+      if (vaccinationsError) {
+        console.error('Error fetching vaccinations:', vaccinationsError);
+      } else if (vaccinationsData) {
+        console.log('Vaccinations data fetched successfully:', vaccinationsData);
+        setVaccinations(vaccinationsData.map(vaccination => ({
+          id: vaccination.id,
+          petId: vaccination.pet_id,
+          vaccineName: vaccination.vaccine_name,
+          dateGiven: vaccination.date_given,
+          nextDueDate: vaccination.next_due_date,
+          veterinarian: vaccination.veterinarian,
+          notes: vaccination.notes,
+          imageUrl: vaccination.image_url,
+        })));
+      }
+
+      console.log('All data fetched successfully');
+    } catch (error) {
+      console.error('Error in fetchAllData:', error);
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
+  };
+
+  const uploadPetPhoto = async (file: File, petId?: string) => {
+    if (!userEmail) {
+      console.error('No user email available');
+      return null;
+    }
+
+    try {
+      console.log('Starting photo upload for pet:', petId || 'new pet');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${petId || 'temp'}-${Date.now()}.${fileExt}`;
+      const filePath = `${userEmail}/${fileName}`;
+
+      console.log('Uploading file to path:', filePath);
+
+      // Ensure the bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const petPhotosBucket = buckets?.find(bucket => bucket.name === 'pet-photos');
+      
+      if (!petPhotosBucket) {
+        console.log('Creating pet-photos bucket...');
+        const { error: bucketError } = await supabase.storage.createBucket('pet-photos', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+        });
+        
+        if (bucketError) {
+          console.error('Error creating bucket:', bucketError);
+          throw bucketError;
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('pet-photos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('pet-photos')
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading pet photo:', error);
+      throw error;
+    }
+  };
+
+  const uploadUserPhoto = async (file: File) => {
+    if (!userEmail) {
+      console.error('No user email available');
+      return null;
+    }
+
+    try {
+      console.log('Starting user photo upload');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `profile-${Date.now()}.${fileExt}`;
+      const filePath = `${userEmail}/${fileName}`;
+
+      console.log('Uploading file to path:', filePath);
+
+      const { error: uploadError } = await supabase.storage
+        .from('user-photos')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-photos')
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+
+      // Update user with photo URL in database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ photo_url: publicUrl } as { photo_url: string })
+        .eq('email', userEmail);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated user photo URL in database');
+
+      // Update local state immediately
+      setUser(prev => prev ? { ...prev, photoUrl: publicUrl } : null);
+
+      console.log('Updated local state with new photo URL');
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading user photo:', error);
       throw error;
     }
   };
