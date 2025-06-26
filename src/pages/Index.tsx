@@ -316,6 +316,15 @@ const Index = () => {
     gender: 'male' as const
   };
 
+  const handleTabChange = (tab: string) => {
+    if (tab === 'vets') {
+      // Navigate to the VetDirectory page
+      window.location.href = '/vet-directory';
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   const renderActiveTab = () => {
     console.log('Rendering active tab:', activeTab);
     switch (activeTab) {
@@ -408,7 +417,7 @@ const Index = () => {
         </div>
 
         {/* Bottom Navigation */}
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* Modals */}
         <EditProfileModal
