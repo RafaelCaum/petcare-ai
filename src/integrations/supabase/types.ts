@@ -323,6 +323,33 @@ export type Database = {
           },
         ]
       }
+      vet_queries: {
+        Row: {
+          data: string
+          id: string
+          pergunta: string
+          pet_id: string | null
+          resposta: string | null
+          user_id: string
+        }
+        Insert: {
+          data?: string
+          id?: string
+          pergunta: string
+          pet_id?: string | null
+          resposta?: string | null
+          user_id: string
+        }
+        Update: {
+          data?: string
+          id?: string
+          pergunta?: string
+          pet_id?: string | null
+          resposta?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       zapier_webhooks: {
         Row: {
           created_at: string
