@@ -317,11 +317,6 @@ const Index = () => {
   };
 
   const handleTabChange = (tab: string) => {
-    if (tab === 'vets') {
-      // Navigate to the VetDirectory page
-      window.location.href = '/vet-directory';
-      return;
-    }
     setActiveTab(tab);
   };
 

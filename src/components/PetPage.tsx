@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Pet, Vaccination } from '../types/pet';
 import PetAvatar from './PetAvatar';
-import { Calendar, Weight, Palette, Users, Plus, Edit, Trash2, Syringe, MapPin, Phone, Clock } from 'lucide-react';
+import { Calendar, Weight, Palette, Users, Plus, Edit, Trash2, Syringe, Clock } from 'lucide-react';
 
 interface PetPageProps {
   pets: Pet[];
@@ -240,81 +240,6 @@ const PetPage: React.FC<PetPageProps> = ({
           </div>
         );
       
-      case 'vet-directory':
-        return (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-                <MapPin className="mr-2 text-primary" size={20} />
-                Diretório Veterinário - SOS
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">Clínicas de emergência próximas</p>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                {[
-                  { 
-                    name: 'Clínica Veterinária PetCare', 
-                    address: 'Rua das Flores, 123 - Centro', 
-                    phone: '(11) 1234-5678', 
-                    emergency: true,
-                    hours: '24h'
-                  },
-                  { 
-                    name: 'Hospital Veterinário Animal Life', 
-                    address: 'Av. Principal, 456 - Vila Nova', 
-                    phone: '(11) 2345-6789', 
-                    emergency: true,
-                    hours: '24h'
-                  },
-                  { 
-                    name: 'Vet Center Emergency', 
-                    address: 'Rua do Pet, 789 - Jardim Animal', 
-                    phone: '(11) 3456-7890', 
-                    emergency: true,
-                    hours: '24h'
-                  }
-                ].map((vet, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-800 flex items-center">
-                        <MapPin size={16} className="mr-2 text-red-500" />
-                        {vet.name}
-                      </h4>
-                      {vet.emergency && (
-                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
-                          🚨 {vet.hours}
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p className="flex items-center">
-                        <MapPin size={14} className="mr-2 text-gray-400" />
-                        {vet.address}
-                      </p>
-                      <p className="flex items-center">
-                        <Phone size={14} className="mr-2 text-gray-400" />
-                        <a href={`tel:${vet.phone}`} className="text-blue-600 hover:text-blue-800">
-                          {vet.phone}
-                        </a>
-                      </p>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <button className="bg-green-600 text-white text-xs py-1 px-3 rounded hover:bg-green-700 transition-colors">
-                        Ligar Agora
-                      </button>
-                      <button className="bg-blue-600 text-white text-xs py-1 px-3 rounded hover:bg-blue-700 transition-colors">
-                        Ver Localização
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      
       default:
         return null;
     }
@@ -388,8 +313,7 @@ const PetPage: React.FC<PetPageProps> = ({
           <div className="flex border-b border-gray-200">
             {[
               { id: 'profile', label: 'Profile', icon: '👤' },
-              { id: 'vaccinations', label: 'Vaccinations', icon: '💉' },
-              { id: 'vet-directory', label: 'Vet Directory', icon: '🏥' }
+              { id: 'vaccinations', label: 'Vaccinations', icon: '💉' }
             ].map((tab) => (
               <button
                 key={tab.id}
