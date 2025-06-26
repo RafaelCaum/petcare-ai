@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Phone, Filter } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +51,7 @@ const VetDirectoryMap = () => {
     }
   }, []);
 
-  // Fetch veterinary clinics
+  // Fetch veterinary clinics using correct category
   const fetchClinics = async () => {
     setLoading(true);
     try {
@@ -79,7 +80,7 @@ const VetDirectoryMap = () => {
       mapElement.innerHTML = `
         <div class="w-full h-full bg-blue-50 rounded-lg flex items-center justify-center border-2 border-blue-200">
           <div class="text-center p-4">
-            <div class="text-blue-600 text-lg font-semibold mb-2">Map View</div>
+            <div class="text-blue-600 text-lg font-semibold mb-2">Veterinary Clinics Map</div>
             <div class="text-sm text-gray-600">Location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}</div>
             <div class="text-xs text-gray-500 mt-2">Showing ${clinics.length} veterinary clinics nearby</div>
           </div>
