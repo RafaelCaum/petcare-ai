@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
 import PetPage from '../components/PetPage';
@@ -6,31 +7,21 @@ import ExpensesPage from '../components/ExpensesPage';
 import ProfilePageWithLogout from '../components/ProfilePageWithLogout';
 import SplashScreen from '../components/SplashScreen';
 import EmailLogin from '../components/EmailLogin';
-import EditProfileModal from '../components/EditProfileModal';
-import EditPetModal from '../components/EditPetModal';
-import AddVaccinationModal from '../components/AddVaccinationModal';
-import AddReminderModal from '../components/AddReminderModal';
-import AddExpenseModal from '../components/AddExpenseModal';
+import ModalManager from '../components/modals/ModalManager';
+import TrialStatusBar from '../components/status/TrialStatusBar';
 import ZapierIntegration from '../components/ZapierIntegration';
-import PremiumUpgrade from '../components/PremiumUpgrade';
 import TrialExpiredModal from '../components/TrialExpiredModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { usePremiumAccess } from '../hooks/usePremiumAccess';
-import { User, Pet } from '../types/pet';
+import { useModalHandlers } from '../hooks/useModalHandlers';
+import { useAccessControl } from '../hooks/useAccessControl';
+import { User } from '../types/pet';
 import { toast } from 'sonner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [selectedPetForModal, setSelectedPetForModal] = useState<Pet | undefined>(undefined);
-  
-  // Modal states
-  const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
-  const [editPetModalOpen, setEditPetModalOpen] = useState(false);
-  const [addVaccinationModalOpen, setAddVaccinationModalOpen] = useState(false);
-  const [addReminderModalOpen, setAddReminderModalOpen] = useState(false);
-  const [addExpenseModalOpen, setAddExpenseModalOpen] = useState(false);
 
   const { 
     user, 
@@ -66,154 +57,40 @@ const Index = () => {
     nextDueDate
   } = usePremiumAccess(userEmail);
 
+  const modalHandlers = useModalHandlers({
+    pets,
+    addExpense,
+    addReminder,
+    addPet,
+    updatePet,
+    updateUser,
+    addVaccination,
+    refetch,
+    userEmail
+  });
+
+  const { shouldBlockAccess } = useAccessControl({
+    userEmail,
+    status,
+    isPaying,
+    nextDueDate,
+    premiumLoading,
+    checkPremiumStatus
+  });
+
   const handleLogin = (email: string, userData: any) => {
-    console.log('Login successful for:', email);
     setUserEmail(email);
     setCurrentUser(userData);
   };
 
   const handleLogout = () => {
-    console.log('Logging out user');
     setUserEmail(null);
     setCurrentUser(null);
     setActiveTab('home');
   };
 
-  const handleAddReminder = () => {
-    if (pets.length === 0) {
-      toast.error('Add a pet first!');
-      return;
-    }
-    setAddReminderModalOpen(true);
-  };
-
-  const handleAddExpense = () => {
-    if (pets.length === 0) {
-      toast.error('Add a pet first!');
-      return;
-    }
-    setAddExpenseModalOpen(true);
-  };
-
-  const handleEditPet = (pet?: Pet) => {
-    setSelectedPetForModal(pet);
-    setEditPetModalOpen(true);
-  };
-
-  const handleAddVaccination = () => {
-    if (pets.length === 0) {
-      toast.error('Add a pet first!');
-      return;
-    }
-    setAddVaccinationModalOpen(true);
-  };
-
-  const handleEditProfile = () => {
-    setEditProfileModalOpen(true);
-  };
-
   const handleManageSubscription = () => {
     toast.info('Subscription feature in development');
-  };
-
-  const handleSaveProfile = async (userData: Partial<User>) => {
-    try {
-      await updateUser(userData);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Error updating profile');
-    }
-  };
-
-  const handleSavePet = async (petData: any, photoFile?: File) => {
-    try {
-      console.log('=== HANDLE SAVE PET ===');
-      console.log('Selected pet for modal:', selectedPetForModal);
-      console.log('Pet data to save:', petData);
-      console.log('Photo file:', photoFile);
-
-      if (selectedPetForModal) {
-        // Updating existing pet
-        console.log('Updating existing pet with ID:', selectedPetForModal.id);
-        await updatePet(selectedPetForModal.id, petData, photoFile);
-        toast.success('Pet atualizado com sucesso!');
-      } else {
-        // Creating new pet
-        console.log('Creating new pet');
-        await addPet(petData, photoFile);
-        toast.success('Pet adicionado com sucesso!');
-      }
-      
-      // Clear state and refresh data
-      setSelectedPetForModal(undefined);
-      console.log('Refreshing data after save...');
-      await refetch();
-      
-    } catch (error) {
-      console.error('Error saving pet:', error);
-      toast.error('Erro ao salvar pet');
-    }
-  };
-
-  const handleSaveVaccination = async (vaccinationData: any) => {
-    try {
-      console.log('Saving vaccination:', vaccinationData);
-      await addVaccination(vaccinationData);
-      
-      // Send Zapier webhook for email confirmation
-      if (vaccinationData.zapierWebhook) {
-        try {
-          const selectedPet = pets.find(p => p.id === vaccinationData.petId);
-          await fetch(vaccinationData.zapierWebhook, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            mode: "no-cors",
-            body: JSON.stringify({
-              type: "vaccination_confirmation",
-              petName: selectedPet?.name || "Pet",
-              vaccineName: vaccinationData.vaccineName,
-              dateGiven: vaccinationData.dateGiven,
-              nextDueDate: vaccinationData.nextDueDate,
-              veterinarian: vaccinationData.veterinarian,
-              userEmail: userEmail,
-              timestamp: new Date().toISOString(),
-              emailSubject: "Confirmação da Vacina do Seu Pet 🐶❤️",
-              emailBody: `Olá! A vacina ${vaccinationData.vaccineName} foi aplicada com sucesso no seu pet ${selectedPet?.name || 'seu pet'}. Próxima dose: ${new Date(vaccinationData.nextDueDate).toLocaleDateString('pt-BR')}. Veterinário: Dr(a). ${vaccinationData.veterinarian}`
-            }),
-          });
-          console.log('Zapier webhook sent for vaccination confirmation');
-          toast.success('Email de confirmação enviado!');
-        } catch (error) {
-          console.error('Error sending Zapier webhook:', error);
-          toast.error('Erro ao enviar email de confirmação');
-        }
-      }
-      
-      toast.success('Vacina registrada com sucesso!');
-    } catch (error) {
-      console.error('Error in handleSaveVaccination:', error);
-      toast.error('Erro ao registrar vacina');
-    }
-  };
-
-  const handleSaveReminder = async (reminderData: any) => {
-    try {
-      await addReminder(reminderData);
-      toast.success('Reminder added successfully!');
-    } catch (error) {
-      toast.error('Error adding reminder');
-    }
-  };
-
-  const handleSaveExpense = async (expenseData: any) => {
-    try {
-      await addExpense(expenseData);
-      toast.success('Expense added successfully!');
-    } catch (error) {
-      toast.error('Error adding expense');
-    }
   };
 
   const handleDeleteVaccination = async (vaccinationId: string) => {
@@ -245,104 +122,31 @@ const Index = () => {
 
   const handleMarkVaccinationCompleted = async (vaccinationId: string) => {
     try {
-      console.log('handleMarkVaccinationCompleted called with ID:', vaccinationId);
-      
-      // Calculate next due date (1 year from today)
       const nextYear = new Date();
       nextYear.setFullYear(nextYear.getFullYear() + 1);
       const nextDueDate = nextYear.toISOString().split('T')[0];
       
-      console.log('Calling markVaccinationAsCompleted...');
       await markVaccinationAsCompleted(vaccinationId, nextDueDate);
-      
-      console.log('Vaccination marked as completed, refreshing data...');
-      // Force refresh to ensure UI is updated
       await refetch();
-      
       toast.success('Vaccination marked as completed!');
     } catch (error) {
-      console.error('Error in handleMarkVaccinationCompleted:', error);
       toast.error('Error updating vaccination');
     }
   };
 
-  const getTrialMessage = (trialDaysLeft: number, status: string) => {
-    if (status === 'expired') {
-      return 'Trial expired';
-    }
-    if (status === 'active') {
-      return 'Premium Active';
-    }
-    if (trialDaysLeft === 1) {
-      return '1 day free trial';
-    }
-    return `${trialDaysLeft} days free trial`;
-  };
-
-  // Check if user should be blocked (trial expired and not paying)
-  const shouldBlockAccess = () => {
-    if (status === 'active') return false; // Premium active
-    if (status === 'free') return false; // Still in trial period
-    
-    // Trial expired - check payment status
-    if (status === 'expired') {
-      if (!isPaying) return true; // Not paying, block access
-      
-      // Check if subscription is expired
-      if (nextDueDate) {
-        const dueDate = new Date(nextDueDate);
-        const today = new Date();
-        if (today > dueDate) return true; // Subscription expired, block access
-      }
-    }
-    
-    return false;
-  };
-
-  // Check premium status after login
-  useEffect(() => {
-    if (userEmail && !premiumLoading) {
-      checkPremiumStatus();
-    }
-  }, [userEmail]);
-
-  // Show login if no user is logged in
   if (!userEmail) {
     return <EmailLogin onLogin={handleLogin} />;
   }
 
-  // Show loading while fetching data
   if (loading || premiumLoading) {
-    console.log('Loading state - showing splash screen');
     return <SplashScreen isVisible={true} />;
   }
 
-  // Show mandatory trial expired modal if access should be blocked
   if (shouldBlockAccess()) {
     return <TrialExpiredModal />;
   }
 
-  console.log('Rendering main app with pets:', pets.length, 'active tab:', activeTab);
-
-  // Get the first pet for now (we'll handle multiple pets later)
-  const currentPet = pets[0] || {
-    id: 'temp',
-    name: 'Add Your Pet',
-    type: 'dog' as const,
-    breed: '',
-    birthDate: new Date().toISOString().split('T')[0],
-    avatar: '🐕',
-    weight: 0,
-    color: '',
-    gender: 'male' as const
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-  };
-
   const renderActiveTab = () => {
-    console.log('Rendering active tab:', activeTab);
     switch (activeTab) {
       case 'home':
         return (
@@ -351,20 +155,18 @@ const Index = () => {
             reminders={reminders}
             expenses={expenses}
             vaccinations={vaccinations}
-            onAddReminder={handleAddReminder}
-            onAddExpense={handleAddExpense}
+            onAddReminder={modalHandlers.handleAddReminder}
+            onAddExpense={modalHandlers.handleAddExpense}
             onMarkVaccinationCompleted={handleMarkVaccinationCompleted}
           />
         );
       case 'pet':
-        console.log('Rendering PetPage with pets:', pets);
-        console.log('Rendering PetPage with vaccinations:', vaccinations);
         return (
           <PetPage
             pets={pets}
             vaccinations={vaccinations}
-            onEditPet={handleEditPet}
-            onAddVaccination={handleAddVaccination}
+            onEditPet={modalHandlers.handleEditPet}
+            onAddVaccination={modalHandlers.handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
             onDeletePet={handleDeletePet}
           />
@@ -374,7 +176,7 @@ const Index = () => {
           <ExpensesPage
             expenses={expenses}
             pets={pets}
-            onAddExpense={handleAddExpense}
+            onAddExpense={modalHandlers.handleAddExpense}
             onDeleteExpense={handleDeleteExpense}
           />
         );
@@ -382,7 +184,7 @@ const Index = () => {
         return (
           <ProfilePageWithLogout
             user={user || currentUser!}
-            onEditProfile={handleEditProfile}
+            onEditProfile={modalHandlers.handleEditProfile}
             onManageSubscription={handleManageSubscription}
             onLogout={handleLogout}
           />
@@ -395,86 +197,46 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto bg-white min-h-screen relative">
-        {/* Free Trial Status Indicator with dynamic countdown */}
-        {status === 'free' && (
-          <div className="bg-blue-100 border-l-4 border-blue-400 p-2 text-sm">
-            <p className="text-blue-800 text-center font-medium">
-              {getTrialMessage(trialDaysLeft, status)}
-            </p>
-          </div>
-        )}
+        <TrialStatusBar 
+          status={status}
+          trialDaysLeft={trialDaysLeft}
+          isPaying={isPaying}
+        />
 
-        {status === 'expired' && !isPaying && (
-          <div className="bg-red-100 border-l-4 border-red-400 p-2 text-sm">
-            <p className="text-red-800 text-center font-medium">
-              Trial expired
-            </p>
-          </div>
-        )}
-
-        {status === 'active' && (
-          <div className="bg-green-100 border-l-4 border-green-400 p-2 text-sm">
-            <p className="text-green-800 text-center font-medium">
-              Premium Active
-            </p>
-          </div>
-        )}
-
-        {/* Zapier Integration Component */}
         <ZapierIntegration 
           vaccinations={vaccinations}
           pets={pets}
           userEmail={userEmail}
         />
 
-        {/* Main Content */}
         <div className="px-4 pt-4">
           {renderActiveTab()}
         </div>
 
-        {/* Bottom Navigation */}
-        <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Modals */}
-        <EditProfileModal
-          user={user || currentUser!}
-          isOpen={editProfileModalOpen}
-          onClose={() => setEditProfileModalOpen(false)}
-          onSave={handleSaveProfile}
-          onUploadPhoto={uploadUserPhoto}
-        />
-
-        <EditPetModal
-          pet={selectedPetForModal}
-          isOpen={editPetModalOpen}
-          onClose={() => {
-            console.log('Closing EditPetModal, clearing selectedPetForModal');
-            setEditPetModalOpen(false);
-            setSelectedPetForModal(undefined);
-          }}
-          onSave={handleSavePet}
-          onUploadPhoto={uploadPetPhoto}
-        />
-
-        <AddVaccinationModal
+        <ModalManager
+          editProfileModalOpen={modalHandlers.editProfileModalOpen}
+          setEditProfileModalOpen={modalHandlers.setEditProfileModalOpen}
+          user={user || currentUser}
+          handleSaveProfile={modalHandlers.handleSaveProfile}
+          uploadUserPhoto={uploadUserPhoto}
+          editPetModalOpen={modalHandlers.editPetModalOpen}
+          setEditPetModalOpen={modalHandlers.setEditPetModalOpen}
+          selectedPetForModal={modalHandlers.selectedPetForModal}
+          setSelectedPetForModal={modalHandlers.setSelectedPetForModal}
+          handleSavePet={modalHandlers.handleSavePet}
+          uploadPetPhoto={uploadPetPhoto}
+          addVaccinationModalOpen={modalHandlers.addVaccinationModalOpen}
+          setAddVaccinationModalOpen={modalHandlers.setAddVaccinationModalOpen}
+          addReminderModalOpen={modalHandlers.addReminderModalOpen}
+          setAddReminderModalOpen={modalHandlers.setAddReminderModalOpen}
+          addExpenseModalOpen={modalHandlers.addExpenseModalOpen}
+          setAddExpenseModalOpen={modalHandlers.setAddExpenseModalOpen}
           pets={pets}
-          isOpen={addVaccinationModalOpen}
-          onClose={() => setAddVaccinationModalOpen(false)}
-          onSave={handleSaveVaccination}
-        />
-
-        <AddReminderModal
-          pets={pets}
-          isOpen={addReminderModalOpen}
-          onClose={() => setAddReminderModalOpen(false)}
-          onSave={handleSaveReminder}
-        />
-
-        <AddExpenseModal
-          pets={pets}
-          isOpen={addExpenseModalOpen}
-          onClose={() => setAddExpenseModalOpen(false)}
-          onSave={handleSaveExpense}
+          handleSaveVaccination={modalHandlers.handleSaveVaccination}
+          handleSaveReminder={modalHandlers.handleSaveReminder}
+          handleSaveExpense={modalHandlers.handleSaveExpense}
         />
       </div>
     </div>

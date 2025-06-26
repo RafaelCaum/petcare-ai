@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, Camera, Upload } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import { Pet } from '../types/pet';
+import PetPhotoUpload from './pet/PetPhotoUpload';
+import PetFormFields from './pet/PetFormFields';
 
 interface EditPetModalProps {
   pet?: Pet;
@@ -29,12 +31,9 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // Reset form when modal opens/closes or pet changes
   useEffect(() => {
     if (isOpen) {
       if (pet) {
-        // Editing existing pet - populate all fields
-        console.log('Loading pet data for editing:', pet);
         setName(pet.name || '');
         setType(pet.type || 'dog');
         setBreed(pet.breed || '');
@@ -44,8 +43,6 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         setColor(pet.color || '');
         setPhotoPreview(pet.photoUrl || null);
       } else {
-        // Adding new pet - reset all fields
-        console.log('Resetting form for new pet');
         setName('');
         setType('dog');
         setBreed('');
@@ -71,6 +68,11 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
     }
   };
 
+  const handleRemovePhoto = () => {
+    setPhotoPreview(pet?.photoUrl || null);
+    setSelectedFile(null);
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       alert('Por favor, insira o nome do pet');
@@ -79,8 +81,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
     try {
       setUploading(true);
-      console.log('Saving pet data...');
-
+      
       const petData = {
         name: name.trim(),
         type,
@@ -93,14 +94,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         photoUrl: pet?.photoUrl || undefined
       };
 
-      console.log('Calling onSave with pet data:', petData);
-      console.log('Selected file:', selectedFile);
-      console.log('Is editing existing pet?', !!pet);
-      
-      // Pass both petData and photo file to onSave
       await onSave(petData, selectedFile || undefined);
-      
-      console.log('Pet saved successfully, closing modal');
       onClose();
     } catch (error) {
       console.error('Error saving pet:', error);
@@ -125,139 +119,30 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         </div>
 
         <div className="space-y-4">
-          {/* Photo Upload Section */}
-          <div className="text-center">
-            <div className="mb-4">
-              {photoPreview ? (
-                <div className="relative w-24 h-24 mx-auto">
-                  <img
-                    src={photoPreview}
-                    alt="Pet preview"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/20 shadow-lg"
-                  />
-                  <button
-                    onClick={() => {
-                      setPhotoPreview(pet?.photoUrl || null);
-                      setSelectedFile(null);
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-24 h-24 mx-auto rounded-full bg-gray-100 flex items-center justify-center shadow-md">
-                  <Camera size={32} className="text-gray-400" />
-                </div>
-              )}
-            </div>
-            
-            <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors shadow-sm hover:shadow-md">
-              <Upload size={16} className="mr-2" />
-              {pet ? 'Alterar Foto' : 'Adicionar Foto'}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </label>
-          </div>
+          <PetPhotoUpload
+            photoPreview={photoPreview}
+            selectedFile={selectedFile}
+            onFileSelect={handleFileSelect}
+            onRemovePhoto={handleRemovePhoto}
+            isEditing={!!pet}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nome do Pet *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-              placeholder="Nome do seu pet"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo *
-            </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as 'dog' | 'cat')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-            >
-              <option value="dog">Cão</option>
-              <option value="cat">Gato</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Raça
-            </label>
-            <input
-              type="text"
-              value={breed}
-              onChange={(e) => setBreed(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-              placeholder="Raça do pet"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Data de Nascimento
-            </label>
-            <input
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sexo
-            </label>
-            <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value as 'male' | 'female')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-            >
-              <option value="male">Macho</option>
-              <option value="female">Fêmea</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Peso (kg)
-            </label>
-            <input
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-              placeholder="Peso em kg"
-              min="0"
-              step="0.1"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cor
-            </label>
-            <input
-              type="text"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
-              placeholder="Cor do pet"
-            />
-          </div>
+          <PetFormFields
+            name={name}
+            setName={setName}
+            type={type}
+            setType={setType}
+            breed={breed}
+            setBreed={setBreed}
+            birthDate={birthDate}
+            setBirthDate={setBirthDate}
+            gender={gender}
+            setGender={setGender}
+            weight={weight}
+            setWeight={setWeight}
+            color={color}
+            setColor={setColor}
+          />
         </div>
 
         <div className="flex space-x-3 mt-6">
