@@ -18,11 +18,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onManageSubscription,
   onLogout 
 }) => {
-  const { isPremium, status, openCustomerPortal } = usePremiumAccess(user.email);
+  const { isPremium, status, trialDaysLeft, openCustomerPortal } = usePremiumAccess(user.email);
 
   const getSubscriptionStatus = () => {
     switch (status) {
-      case 'trial':
+      case 'free':
         return { text: 'Free Trial', color: 'bg-blue-100 text-blue-800', icon: '🆓' };
       case 'active':
         return { text: 'Premium', color: 'bg-green-100 text-green-800', icon: '⭐' };
@@ -70,10 +70,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <span className="mr-1">{subscription.icon}</span>
             {subscription.text}
           </div>
-          {status === 'trial' && (
+          {status === 'free' && trialDaysLeft > 0 && (
             <div className="text-right">
-              <div className="text-sm text-primary-foreground/80">Trial Active</div>
-              <div className="text-lg font-bold">Premium Features</div>
+              <div className="text-sm text-primary-foreground/80">
+                Day {7 - trialDaysLeft + 1} of Free Trial
+              </div>
+              <div className="text-lg font-bold">{trialDaysLeft} days left</div>
             </div>
           )}
         </div>
@@ -87,7 +89,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <div>
               <h3 className="font-semibold text-yellow-800">PetCare Premium Active</h3>
               <p className="text-sm text-yellow-700">
-                {status === 'trial' ? 'Free trial - $9.99/month after trial ends' : 'Premium subscription - $9.99/month'}
+                {status === 'free' ? 'Free trial - $9.99/month after trial ends' : 'Premium subscription - $9.99/month'}
               </p>
             </div>
           </div>
