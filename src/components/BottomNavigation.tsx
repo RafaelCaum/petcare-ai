@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Heart, DollarSign, User, MapPin } from 'lucide-react';
+import { Home, Heart, DollarSign, User } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -12,7 +12,6 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabCha
     { id: 'home', label: 'Home', icon: Home },
     { id: 'pet', label: 'My Pet', icon: Heart },
     { id: 'expenses', label: 'Expenses', icon: DollarSign },
-    { id: 'vets', label: 'Vets', icon: MapPin },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 

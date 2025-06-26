@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
-import PetPage from '../components/PetPage';
+import PetPageWithVetDirectory from '../components/PetPageWithVetDirectory';
 import ExpensesPage from '../components/ExpensesPage';
 import ProfilePageWithLogout from '../components/ProfilePageWithLogout';
 import SplashScreen from '../components/SplashScreen';
@@ -317,11 +317,6 @@ const Index = () => {
   };
 
   const handleTabChange = (tab: string) => {
-    if (tab === 'vets') {
-      // Navigate to the VetDirectory page
-      window.location.href = '/vet-directory';
-      return;
-    }
     setActiveTab(tab);
   };
 
@@ -341,10 +336,10 @@ const Index = () => {
           />
         );
       case 'pet':
-        console.log('Rendering PetPage with pets:', pets);
-        console.log('Rendering PetPage with vaccinations:', vaccinations);
+        console.log('Rendering PetPageWithVetDirectory with pets:', pets);
+        console.log('Rendering PetPageWithVetDirectory with vaccinations:', vaccinations);
         return (
-          <PetPage
+          <PetPageWithVetDirectory
             pets={pets}
             vaccinations={vaccinations}
             onEditPet={handleEditPet}
