@@ -133,46 +133,18 @@ const Index = () => {
       console.log('Photo file:', photoFile);
 
       if (selectedPetForModal) {
-        // É uma atualização
+        // Updating existing pet
         console.log('Updating existing pet with ID:', selectedPetForModal.id);
-        
-        // Handle photo upload first if there's a new photo
-        if (photoFile) {
-          console.log('Uploading new photo for existing pet...');
-          const photoUrl = await uploadPetPhoto(photoFile, selectedPetForModal.id);
-          if (photoUrl) {
-            petData.photoUrl = photoUrl;
-          }
-        }
-        
-        await updatePet(selectedPetForModal.id, petData);
+        await updatePet(selectedPetForModal.id, petData, photoFile);
         toast.success('Pet atualizado com sucesso!');
       } else {
-        // É uma criação
+        // Creating new pet
         console.log('Creating new pet');
-        
-        // First create the pet
-        const newPet = await addPet(petData);
-        
-        // Then handle photo upload if there's a photo and the pet was created successfully
-        if (photoFile && newPet) {
-          console.log('Uploading photo for new pet...');
-          try {
-            const photoUrl = await uploadPetPhoto(photoFile, newPet.id);
-            if (photoUrl) {
-              // Update the pet with the photo URL
-              await updatePet(newPet.id, { ...petData, photoUrl });
-            }
-          } catch (photoError) {
-            console.error('Error uploading photo for new pet:', photoError);
-            // Don't fail the entire operation if photo upload fails
-          }
-        }
-        
+        await addPet(petData, photoFile);
         toast.success('Pet adicionado com sucesso!');
       }
       
-      // Limpar estado e forçar refresh dos dados
+      // Clear state and refresh data
       setSelectedPetForModal(undefined);
       console.log('Refreshing data after save...');
       await refetch();

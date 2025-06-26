@@ -47,11 +47,11 @@ export const useSupabaseData = (userEmail: string | null) => {
       console.log('Starting fetchAllData for:', userEmail);
       setLoading(true);
 
-      // Fetch user data
+      // Fetch user data - only essential fields
       console.log('Fetching user data...');
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('id, name, email, phone, photo_url, subscription_status, trial_start_date, subscription_end_date')
         .eq('email', userEmail)
         .single();
 
@@ -72,11 +72,11 @@ export const useSupabaseData = (userEmail: string | null) => {
         });
       }
 
-      // Fetch pets
+      // Fetch pets - only essential fields
       console.log('Fetching pets data...');
       const { data: petsData, error: petsError } = await supabase
         .from('pets')
-        .select('*')
+        .select('id, name, type, breed, birth_date, avatar, weight, color, gender, photo_url')
         .eq('user_email', userEmail);
 
       if (petsError) {
@@ -191,7 +191,7 @@ export const useSupabaseData = (userEmail: string | null) => {
 
       console.log('Uploading file to path:', filePath);
 
-      // First, ensure the bucket exists
+      // Ensure the bucket exists
       const { data: buckets } = await supabase.storage.listBuckets();
       const petPhotosBucket = buckets?.find(bucket => bucket.name === 'pet-photos');
       
@@ -226,30 +226,6 @@ export const useSupabaseData = (userEmail: string | null) => {
         .getPublicUrl(filePath);
 
       console.log('Generated public URL:', publicUrl);
-
-      // Update pet with photo URL in database only if petId exists
-      if (petId) {
-        const { error: updateError } = await supabase
-          .from('pets')
-          .update({ photo_url: publicUrl })
-          .eq('id', petId)
-          .eq('user_email', userEmail);
-
-        if (updateError) {
-          console.error('Database update error:', updateError);
-          throw updateError;
-        }
-
-        console.log('Successfully updated pet photo URL in database');
-
-        // Update local state immediately
-        setPets(prev => prev.map(pet => 
-          pet.id === petId ? { ...pet, photoUrl: publicUrl } : pet
-        ));
-
-        console.log('Updated local state with new photo URL');
-      }
-
       return publicUrl;
     } catch (error) {
       console.error('Error uploading pet photo:', error);
@@ -308,6 +284,177 @@ export const useSupabaseData = (userEmail: string | null) => {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading user photo:', error);
+      throw error;
+    }
+  };
+
+  const addPet = async (petData: Omit<Pet, 'id'>, photoFile?: File) => {
+    if (!userEmail) return;
+
+    try {
+      console.log('=== ADDING NEW PET ===');
+      console.log('Pet data:', petData);
+      console.log('Photo file:', photoFile);
+
+      // First, create the pet record
+      const { data, error } = await supabase
+        .from('pets')
+        .insert({
+          user_email: userEmail,
+          name: petData.name,
+          type: petData.type,
+          breed: petData.breed || null,
+          birth_date: petData.birthDate || null,
+          gender: petData.gender || null,
+          weight: petData.weight || null,
+          color: petData.color || null,
+          avatar: petData.avatar,
+          photo_url: null, // Initially null, will update if photo upload succeeds
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding pet:', error);
+        throw error;
+      }
+
+      console.log('Pet added successfully:', data);
+
+      let finalPhotoUrl = null;
+
+      // Then upload photo if provided
+      if (photoFile) {
+        try {
+          console.log('Uploading photo for new pet...');
+          finalPhotoUrl = await uploadPetPhoto(photoFile, data.id);
+          
+          if (finalPhotoUrl) {
+            // Update the pet record with the photo URL
+            const { error: updateError } = await supabase
+              .from('pets')
+              .update({ photo_url: finalPhotoUrl })
+              .eq('id', data.id)
+              .eq('user_email', userEmail);
+
+            if (updateError) {
+              console.error('Error updating pet with photo URL:', updateError);
+              // Don't throw here, pet was created successfully
+            } else {
+              console.log('Successfully updated pet with photo URL');
+            }
+          }
+        } catch (photoError) {
+          console.error('Error uploading photo for new pet:', photoError);
+          // Don't fail the entire operation if photo upload fails
+        }
+      }
+
+      const newPet: Pet = {
+        id: data.id,
+        name: data.name,
+        type: data.type as 'dog' | 'cat',
+        breed: data.breed || '',
+        birthDate: data.birth_date || '',
+        avatar: data.avatar || '🐕',
+        weight: data.weight || 0,
+        color: data.color || '',
+        gender: data.gender as 'male' | 'female' || 'male',
+        photoUrl: finalPhotoUrl || undefined,
+      };
+
+      setPets(prev => [...prev, newPet]);
+      console.log('=== PET ADDITION COMPLETED ===');
+      return newPet;
+    } catch (error) {
+      console.error('Error adding pet:', error);
+      throw error;
+    }
+  };
+
+  const updatePet = async (petId: string, petData: Omit<Pet, 'id'>, photoFile?: File) => {
+    if (!userEmail) {
+      console.error('No user email available for updatePet');
+      return;
+    }
+
+    try {
+      console.log('=== UPDATING PET ===');
+      console.log('Pet ID:', petId);
+      console.log('Pet Data:', petData);
+      console.log('Photo File:', photoFile);
+      
+      let finalPhotoUrl = petData.photoUrl;
+
+      // Handle photo upload first if there's a new photo
+      if (photoFile) {
+        try {
+          console.log('Uploading new photo for existing pet...');
+          finalPhotoUrl = await uploadPetPhoto(photoFile, petId);
+          console.log('Photo uploaded successfully:', finalPhotoUrl);
+        } catch (photoError) {
+          console.error('Error uploading photo:', photoError);
+          // Continue with update even if photo fails
+        }
+      }
+      
+      const updateData = {
+        name: petData.name,
+        type: petData.type,
+        breed: petData.breed || null,
+        birth_date: petData.birthDate || null,
+        gender: petData.gender || null,
+        weight: petData.weight || null,
+        color: petData.color || null,
+        avatar: petData.avatar,
+        photo_url: finalPhotoUrl || null,
+      };
+
+      console.log('Update data being sent to Supabase:', updateData);
+
+      const { data, error } = await supabase
+        .from('pets')
+        .update(updateData)
+        .eq('id', petId)
+        .eq('user_email', userEmail)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Supabase update successful:', data);
+
+      const updatedPet: Pet = {
+        id: data.id,
+        name: data.name,
+        type: data.type as 'dog' | 'cat',
+        breed: data.breed || '',
+        birthDate: data.birth_date || '',
+        avatar: data.avatar || '🐕',
+        weight: data.weight || 0,
+        color: data.color || '',
+        gender: data.gender as 'male' | 'female' || 'male',
+        photoUrl: data.photo_url || undefined,
+      };
+
+      console.log('Updated pet object:', updatedPet);
+
+      // Update local state immediately
+      setPets(prev => {
+        const newPets = prev.map(pet => 
+          pet.id === petId ? updatedPet : pet
+        );
+        console.log('Updated pets state:', newPets);
+        return newPets;
+      });
+
+      console.log('=== PET UPDATE COMPLETED ===');
+      return updatedPet;
+    } catch (error) {
+      console.error('Error updating pet:', error);
       throw error;
     }
   };
@@ -390,132 +537,6 @@ export const useSupabaseData = (userEmail: string | null) => {
       return newReminder;
     } catch (error) {
       console.error('Error adding reminder:', error);
-      throw error;
-    }
-  };
-
-  const addPet = async (pet: Omit<Pet, 'id'>) => {
-    if (!userEmail) return;
-
-    try {
-      console.log('=== ADDING NEW PET ===');
-      console.log('Pet data:', pet);
-
-      const { data, error } = await supabase
-        .from('pets')
-        .insert({
-          user_email: userEmail,
-          name: pet.name,
-          type: pet.type,
-          breed: pet.breed || null,
-          birth_date: pet.birthDate || null,
-          gender: pet.gender || null,
-          weight: pet.weight || null,
-          color: pet.color || null,
-          avatar: pet.avatar,
-          photo_url: pet.photoUrl || null,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding pet:', error);
-        throw error;
-      }
-
-      console.log('Pet added successfully:', data);
-
-      const newPet: Pet = {
-        id: data.id,
-        name: data.name,
-        type: data.type as 'dog' | 'cat',
-        breed: data.breed || '',
-        birthDate: data.birth_date || '',
-        avatar: data.avatar || '🐕',
-        weight: data.weight || 0,
-        color: data.color || '',
-        gender: data.gender as 'male' | 'female' || 'male',
-        photoUrl: data.photo_url || undefined,
-      };
-
-      setPets(prev => [...prev, newPet]);
-      console.log('=== PET ADDITION COMPLETED ===');
-      return newPet;
-    } catch (error) {
-      console.error('Error adding pet:', error);
-      throw error;
-    }
-  };
-
-  const updatePet = async (petId: string, petData: Omit<Pet, 'id'>) => {
-    if (!userEmail) {
-      console.error('No user email available for updatePet');
-      return;
-    }
-
-    try {
-      console.log('=== UPDATING PET ===');
-      console.log('Pet ID:', petId);
-      console.log('Pet Data:', petData);
-      console.log('User Email:', userEmail);
-      
-      const updateData = {
-        name: petData.name,
-        type: petData.type,
-        breed: petData.breed || null,
-        birth_date: petData.birthDate || null,
-        gender: petData.gender || null,
-        weight: petData.weight || null,
-        color: petData.color || null,
-        avatar: petData.avatar,
-        photo_url: petData.photoUrl || null,
-      };
-
-      console.log('Update data being sent to Supabase:', updateData);
-
-      const { data, error } = await supabase
-        .from('pets')
-        .update(updateData)
-        .eq('id', petId)
-        .eq('user_email', userEmail)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
-      }
-
-      console.log('Supabase update successful:', data);
-
-      const updatedPet: Pet = {
-        id: data.id,
-        name: data.name,
-        type: data.type as 'dog' | 'cat',
-        breed: data.breed || '',
-        birthDate: data.birth_date || '',
-        avatar: data.avatar || '🐕',
-        weight: data.weight || 0,
-        color: data.color || '',
-        gender: data.gender as 'male' | 'female' || 'male',
-        photoUrl: data.photo_url || undefined,
-      };
-
-      console.log('Updated pet object:', updatedPet);
-
-      // Update local state immediately
-      setPets(prev => {
-        const newPets = prev.map(pet => 
-          pet.id === petId ? updatedPet : pet
-        );
-        console.log('Updated pets state:', newPets);
-        return newPets;
-      });
-
-      console.log('=== PET UPDATE COMPLETED ===');
-      return updatedPet;
-    } catch (error) {
-      console.error('Error updating pet:', error);
       throw error;
     }
   };
@@ -652,7 +673,6 @@ export const useSupabaseData = (userEmail: string | null) => {
 
       setVaccinations(prev => [...prev, newVaccination]);
       
-      // Exibir mensagem de sucesso
       toast.success('Vacina registrada com sucesso!');
       
       return newVaccination;
@@ -725,7 +745,6 @@ export const useSupabaseData = (userEmail: string | null) => {
 
       console.log('Updated vaccination object:', updatedVaccination);
 
-      // Force state update
       setVaccinations(prev => {
         console.log('Previous vaccinations state:', prev);
         const newState = prev.map(vaccination => 

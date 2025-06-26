@@ -81,7 +81,7 @@ const PetPage: React.FC<PetPageProps> = ({
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => onEditPet()}
-            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
           >
             <Plus size={20} />
             Add Pet
@@ -103,7 +103,7 @@ const PetPage: React.FC<PetPageProps> = ({
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
             <div className="flex items-center space-x-4 mb-4">
               <PetAvatar pet={selectedPet} size="large" />
               <div>
@@ -160,7 +160,7 @@ const PetPage: React.FC<PetPageProps> = ({
       
       case 'vaccinations':
         return (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center">
@@ -169,7 +169,7 @@ const PetPage: React.FC<PetPageProps> = ({
                 </h3>
                 <button
                   onClick={onAddVaccination}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
                 >
                   <Plus size={16} />
                   Adicionar
@@ -184,7 +184,7 @@ const PetPage: React.FC<PetPageProps> = ({
                   <p className="text-gray-500 mb-4">Nenhuma vacinação registrada</p>
                   <button
                     onClick={onAddVaccination}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
                   >
                     Adicionar Primeira Vacinação
                   </button>
@@ -256,7 +256,7 @@ const PetPage: React.FC<PetPageProps> = ({
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => onEditPet()}
-          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
           <Plus size={20} />
           Add Pet
@@ -265,14 +265,14 @@ const PetPage: React.FC<PetPageProps> = ({
           <>
             <button
               onClick={(e) => handleEditPet(selectedPet, e)}
-              className="bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+              className="bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
               <Edit size={20} />
               Edit
             </button>
             <button
               onClick={(e) => handleDeletePet(selectedPet, e)}
-              className="bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+              className="bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
               <Trash2 size={20} />
               Delete
@@ -286,10 +286,10 @@ const PetPage: React.FC<PetPageProps> = ({
         {pets.map((pet) => (
           <div
             key={pet.id}
-            className={`bg-white rounded-2xl p-4 shadow-lg border transition-all cursor-pointer ${
+            className={`bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all cursor-pointer border ${
               selectedPet?.id === pet.id 
                 ? 'border-blue-500 ring-2 ring-blue-200 shadow-xl' 
-                : 'border-gray-100 hover:shadow-xl'
+                : 'border-gray-100'
             }`}
             onClick={() => setSelectedPet(pet)}
           >
@@ -309,7 +309,7 @@ const PetPage: React.FC<PetPageProps> = ({
 
       {/* Tabs */}
       {selectedPet && (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden">
           <div className="flex border-b border-gray-200">
             {[
               { id: 'profile', label: 'Profile', icon: '👤' },

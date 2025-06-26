@@ -81,20 +81,6 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
       setUploading(true);
       console.log('Saving pet data...');
 
-      let photoUrl = pet?.photoUrl;
-
-      // Handle photo upload for both new and existing pets
-      if (selectedFile && onUploadPhoto) {
-        console.log('Uploading photo...');
-        try {
-          photoUrl = await onUploadPhoto(selectedFile, pet?.id);
-          console.log('Photo uploaded successfully:', photoUrl);
-        } catch (error) {
-          console.error('Error uploading photo:', error);
-          // Continue with save even if photo upload fails
-        }
-      }
-
       const petData = {
         name: name.trim(),
         type,
@@ -104,10 +90,11 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         weight: Number(weight) || 0,
         color: color.trim(),
         avatar: type === 'dog' ? '🐕' : '🐱',
-        photoUrl: photoUrl || undefined
+        photoUrl: pet?.photoUrl || undefined
       };
 
       console.log('Calling onSave with pet data:', petData);
+      console.log('Selected file:', selectedFile);
       console.log('Is editing existing pet?', !!pet);
       
       // Pass both petData and photo file to onSave
@@ -127,7 +114,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl hover:shadow-2xl transition-shadow">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">
             {pet ? 'Editar Pet' : 'Adicionar Pet'}
@@ -165,7 +152,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               )}
             </div>
             
-            <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors shadow-sm">
+            <label className="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors shadow-sm hover:shadow-md">
               <Upload size={16} className="mr-2" />
               {pet ? 'Alterar Foto' : 'Adicionar Foto'}
               <input
@@ -185,7 +172,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
               placeholder="Nome do seu pet"
               required
             />
@@ -198,7 +185,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
             <select
               value={type}
               onChange={(e) => setType(e.target.value as 'dog' | 'cat')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
             >
               <option value="dog">Cão</option>
               <option value="cat">Gato</option>
@@ -213,7 +200,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               type="text"
               value={breed}
               onChange={(e) => setBreed(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
               placeholder="Raça do pet"
             />
           </div>
@@ -226,7 +213,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
             />
           </div>
 
@@ -237,7 +224,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value as 'male' | 'female')}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
             >
               <option value="male">Macho</option>
               <option value="female">Fêmea</option>
@@ -252,7 +239,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               type="number"
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
               placeholder="Peso em kg"
               min="0"
               step="0.1"
@@ -267,7 +254,7 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
               type="text"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary shadow-sm focus:shadow-md transition-shadow"
               placeholder="Cor do pet"
             />
           </div>
@@ -276,14 +263,14 @@ const EditPetModal: React.FC<EditPetModalProps> = ({
         <div className="flex space-x-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+            className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || uploading}
-            className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50 shadow-md"
+            className="flex-1 bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:opacity-50 shadow-md hover:shadow-lg"
           >
             <Save size={16} className="mr-2" />
             {uploading ? 'Salvando...' : 'Salvar'}
