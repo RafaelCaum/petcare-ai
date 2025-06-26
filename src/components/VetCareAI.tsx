@@ -135,47 +135,47 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
   };
 
   return (
-    <div className="min-h-screen bg-white p-4 font-['Inter'] text-gray-800">
+    <div className="min-h-screen bg-white p-6 font-['Inter'] text-gray-800">
       {/* Header */}
-      <div className="mb-8 text-center">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="bg-blue-50 p-2 rounded-full">
-            <Stethoscope className="w-6 h-6 text-blue-600" />
+      <div className="mb-10 text-center">
+        <div className="flex items-center justify-center gap-4 mb-3">
+          <div className="bg-blue-50 p-3 rounded-full">
+            <Stethoscope className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-800">VetCare AI</h1>
+          <h1 className="text-3xl font-semibold text-gray-800">VetCare AI</h1>
         </div>
-        <p className="text-sm text-gray-500">Assistente virtual veterinário 24h</p>
+        <p className="text-base text-gray-500">Assistente virtual veterinário 24h</p>
       </div>
 
       {/* Medical Icons Decoration */}
-      <div className="flex justify-center gap-8 mb-8 opacity-20">
-        <Heart className="w-5 h-5 text-blue-400" />
-        <Syringe className="w-5 h-5 text-blue-400" />
-        <Stethoscope className="w-5 h-5 text-blue-400" />
+      <div className="flex justify-center gap-10 mb-10 opacity-20">
+        <Heart className="w-6 h-6 text-blue-400" />
+        <Syringe className="w-6 h-6 text-blue-400" />
+        <Stethoscope className="w-6 h-6 text-blue-400" />
       </div>
 
       {/* Question Input */}
-      <Card className="mb-6 border-blue-100 shadow-sm bg-white">
-        <CardContent className="p-4 bg-white">
+      <Card className="mb-8 border-blue-100 shadow-sm bg-white">
+        <CardContent className="p-6 bg-white">
           <div className="space-y-4">
             <div className="relative">
               <Input
                 value={pergunta}
                 onChange={(e) => setPergunta(e.target.value)}
                 placeholder="Digite sua dúvida como se estivesse falando com um veterinário…"
-                className="pr-12 bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-100 text-gray-800"
+                className="pr-14 h-14 text-base bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-100 text-gray-800 placeholder:text-gray-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleSubmit(pergunta)}
               />
               <Button
                 onClick={() => handleSubmit(pergunta)}
                 disabled={isLoading || !pergunta.trim()}
-                className="absolute right-1 top-1 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white"
+                className="absolute right-2 top-2 h-10 w-10 p-0 bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </Button>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm text-gray-500">
               Exemplo: "Meu cachorro está com a vacina atrasada. O que eu faço?"
             </p>
           </div>
@@ -183,14 +183,14 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
       </Card>
 
       {/* Suggested Questions */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-600 mb-3">Perguntas sugeridas:</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-8">
+        <h3 className="text-base font-medium text-gray-600 mb-4">Perguntas sugeridas:</h3>
+        <div className="flex flex-wrap gap-3">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => handleSuggestedQuestion(question)}
-              className="px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors"
+              className="px-4 py-3 text-sm bg-blue-50 text-blue-700 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors"
               disabled={isLoading}
             >
               {question}
@@ -201,13 +201,13 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
 
       {/* Loading State */}
       {isLoading && (
-        <Card className="mb-6 border-blue-100 bg-white">
-          <CardContent className="p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-100"></div>
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-200"></div>
-              <span className="text-sm text-gray-600 ml-2">O VetBot está analisando sua pergunta...</span>
+        <Card className="mb-8 border-blue-100 bg-white">
+          <CardContent className="p-6 bg-white">
+            <div className="flex items-center gap-4">
+              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse delay-100"></div>
+              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse delay-200"></div>
+              <span className="text-base text-gray-600 ml-3">O VetBot está analisando sua pergunta...</span>
             </div>
           </CardContent>
         </Card>
@@ -215,15 +215,15 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
 
       {/* AI Response */}
       {resposta && (
-        <Card className="mb-6 bg-blue-50 border-blue-100">
-          <CardContent className="p-4 bg-blue-50">
-            <div className="flex gap-3">
-              <div className="bg-blue-600 p-2 rounded-full min-w-fit">
-                <Stethoscope className="w-4 h-4 text-white" />
+        <Card className="mb-8 bg-blue-50 border-blue-100">
+          <CardContent className="p-6 bg-blue-50">
+            <div className="flex gap-4">
+              <div className="bg-blue-600 p-3 rounded-full min-w-fit">
+                <Stethoscope className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-blue-900 mb-2">Resposta do VetBot:</h4>
-                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                <h4 className="font-medium text-blue-900 mb-3 text-base">Resposta do VetBot:</h4>
+                <div className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {resposta}
                 </div>
               </div>
@@ -234,14 +234,14 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
 
       {/* Recent Queries */}
       {recentQueries.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-3">Consultas recentes:</h3>
-          <div className="space-y-2">
+        <div className="mb-8">
+          <h3 className="text-base font-medium text-gray-600 mb-4">Consultas recentes:</h3>
+          <div className="space-y-3">
             {recentQueries.map((query) => (
               <Card key={query.id} className="border-gray-100 bg-white">
-                <CardContent className="p-3 bg-white">
-                  <p className="text-sm text-gray-700 mb-1">{query.pergunta}</p>
-                  <p className="text-xs text-gray-500">
+                <CardContent className="p-4 bg-white">
+                  <p className="text-base text-gray-700 mb-2">{query.pergunta}</p>
+                  <p className="text-sm text-gray-500">
                     {new Date(query.data).toLocaleDateString('pt-BR')}
                   </p>
                 </CardContent>
@@ -252,8 +252,8 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
       )}
 
       {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-400 text-center leading-relaxed">
+      <div className="mt-10 pt-6 border-t border-gray-100">
+        <p className="text-sm text-gray-400 text-center leading-relaxed">
           ⚠️ Este é um assistente automatizado. Para emergências, consulte um veterinário presencial.
         </p>
       </div>
