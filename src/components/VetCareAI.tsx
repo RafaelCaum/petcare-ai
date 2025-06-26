@@ -142,16 +142,16 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
           <div className="bg-blue-50 p-3 rounded-full">
             <Stethoscope className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-semibold text-gray-800">VetCare AI</h1>
+          <h1 className="text-4xl font-semibold text-gray-800">VetCare AI</h1>
         </div>
-        <p className="text-base text-gray-500">Assistente virtual veterinário 24h</p>
+        <p className="text-lg text-gray-600">Assistente virtual veterinário 24h</p>
       </div>
 
-      {/* Medical Icons Decoration */}
-      <div className="flex justify-center gap-10 mb-10 opacity-20">
-        <Heart className="w-6 h-6 text-blue-400" />
-        <Syringe className="w-6 h-6 text-blue-400" />
-        <Stethoscope className="w-6 h-6 text-blue-400" />
+      {/* Medical Icons Decoration - Increased visibility and color */}
+      <div className="flex justify-center gap-12 mb-10">
+        <Heart className="w-8 h-8 text-blue-500" />
+        <Syringe className="w-8 h-8 text-blue-500" />
+        <Stethoscope className="w-8 h-8 text-blue-500" />
       </div>
 
       {/* Question Input */}
@@ -163,19 +163,19 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
                 value={pergunta}
                 onChange={(e) => setPergunta(e.target.value)}
                 placeholder="Digite sua dúvida como se estivesse falando com um veterinário…"
-                className="pr-14 h-14 text-base bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-100 text-gray-800 placeholder:text-gray-500"
+                className="pr-16 h-16 text-lg bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-100 text-gray-800 placeholder:text-gray-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleSubmit(pergunta)}
               />
               <Button
                 onClick={() => handleSubmit(pergunta)}
                 disabled={isLoading || !pergunta.trim()}
-                className="absolute right-2 top-2 h-10 w-10 p-0 bg-blue-600 hover:bg-blue-700 text-white"
+                className="absolute right-2 top-2 h-12 w-12 p-0 bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-6 h-6" />
               </Button>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-base text-gray-500">
               Exemplo: "Meu cachorro está com a vacina atrasada. O que eu faço?"
             </p>
           </div>
@@ -184,13 +184,13 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
 
       {/* Suggested Questions */}
       <div className="mb-8">
-        <h3 className="text-base font-medium text-gray-600 mb-4">Perguntas sugeridas:</h3>
+        <h3 className="text-lg font-medium text-gray-700 mb-4">Perguntas sugeridas:</h3>
         <div className="flex flex-wrap gap-3">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => handleSuggestedQuestion(question)}
-              className="px-4 py-3 text-sm bg-blue-50 text-blue-700 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors"
+              className="px-5 py-3 text-base bg-blue-50 text-blue-700 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors"
               disabled={isLoading}
             >
               {question}
@@ -204,10 +204,10 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
         <Card className="mb-8 border-blue-100 bg-white">
           <CardContent className="p-6 bg-white">
             <div className="flex items-center gap-4">
-              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse delay-100"></div>
-              <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse delay-200"></div>
-              <span className="text-base text-gray-600 ml-3">O VetBot está analisando sua pergunta...</span>
+              <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-100"></div>
+              <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-200"></div>
+              <span className="text-base text-gray-700 ml-3">O VetBot está analisando sua pergunta...</span>
             </div>
           </CardContent>
         </Card>
@@ -219,10 +219,10 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
           <CardContent className="p-6 bg-blue-50">
             <div className="flex gap-4">
               <div className="bg-blue-600 p-3 rounded-full min-w-fit">
-                <Stethoscope className="w-5 h-5 text-white" />
+                <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-blue-900 mb-3 text-base">Resposta do VetBot:</h4>
+                <h4 className="font-medium text-blue-900 mb-3 text-lg">Resposta do VetBot:</h4>
                 <div className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {resposta}
                 </div>
@@ -235,7 +235,7 @@ Para questões gerais sobre cuidados com pets, posso ajudar com informações b�
       {/* Recent Queries */}
       {recentQueries.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-base font-medium text-gray-600 mb-4">Consultas recentes:</h3>
+          <h3 className="text-lg font-medium text-gray-700 mb-4">Consultas recentes:</h3>
           <div className="space-y-3">
             {recentQueries.map((query) => (
               <Card key={query.id} className="border-gray-100 bg-white">
