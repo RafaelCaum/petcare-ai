@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -9,7 +8,7 @@ import SplashScreen from '../components/SplashScreen';
 import EmailLogin from '../components/EmailLogin';
 import ModalManager from '../components/modals/ModalManager';
 import TrialStatusBar from '../components/status/TrialStatusBar';
-import N8nIntegration from '../components/N8nIntegration';
+import ZapierIntegration from '../components/ZapierIntegration';
 import TrialExpiredModal from '../components/TrialExpiredModal';
 import { useSupabaseData } from '../hooks/useSupabaseData';
 import { usePremiumAccess } from '../hooks/usePremiumAccess';
@@ -170,10 +169,6 @@ const Index = () => {
             onAddVaccination={modalHandlers.handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
             onDeletePet={handleDeletePet}
-            userEmail={userEmail!}
-            addPet={addPet}
-            updatePet={updatePet}
-            uploadPetPhoto={uploadPetPhoto}
           />
         );
       case 'vetcare':
@@ -215,7 +210,7 @@ const Index = () => {
           isPaying={isPaying}
         />
 
-        <N8nIntegration 
+        <ZapierIntegration 
           vaccinations={vaccinations}
           pets={pets}
           userEmail={userEmail}
