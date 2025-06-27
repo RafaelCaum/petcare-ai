@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import BottomNavigation from '../components/BottomNavigation';
 import HomePage from '../components/HomePage';
@@ -18,6 +17,7 @@ import { useAccessControl } from '../hooks/useAccessControl';
 import { User } from '../types/pet';
 import { toast } from 'sonner';
 import VetCareAI from '../components/VetCareAI';
+import MyPetPage from '../components/MyPetPage';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -170,6 +170,12 @@ const Index = () => {
             onAddVaccination={modalHandlers.handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
             onDeletePet={handleDeletePet}
+          />
+        );
+      case 'mypet':
+        return (
+          <MyPetPage
+            userEmail={userEmail!}
           />
         );
       case 'vetcare':
