@@ -46,8 +46,6 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
 
   const sendToN8N = async (petData: any) => {
     try {
-      // In a real implementation, you would have configured n8n webhook URLs
-      // For now, we'll just log the data that would be sent
       const webhookData = {
         user_email: userEmail,
         pet_data: petData,
@@ -56,14 +54,6 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
       };
       
       console.log('Data that would be sent to n8n:', webhookData);
-      
-      // Here you would make the actual webhook call:
-      // const response = await fetch('YOUR_N8N_WEBHOOK_URL', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(webhookData)
-      // });
-      
       toast.success('Pet cadastrado! Plano vacinal será gerado em breve.');
     } catch (error) {
       console.error('Error sending to n8n:', error);
@@ -102,7 +92,6 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
       const savedPet = await addPet(petData, selectedFile || undefined);
       
       if (savedPet) {
-        // Send data to n8n for processing
         await sendToN8N({
           ...petData,
           id: savedPet.id,
@@ -134,27 +123,27 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6 font-['Inter']">
+    <div className="min-h-screen bg-white p-6 font-['Inter']" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-8 text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Heart className="w-8 h-8 text-blue-500" />
-          <h1 className="text-3xl font-semibold text-gray-800">Cadastro do Pet</h1>
+          <h1 className="text-3xl font-semibold" style={{ color: '#333' }}>Cadastro do Pet</h1>
         </div>
         <p className="text-gray-600">Vamos conhecer melhor seu companheiro</p>
       </div>
 
       {/* Form */}
-      <Card className="max-w-2xl mx-auto border-0 shadow-lg">
+      <Card className="max-w-2xl mx-auto border-0 shadow-lg" style={{ backgroundColor: '#FFFFFF' }}>
         <CardHeader className="text-center pb-6">
-          <CardTitle className="text-xl text-gray-700">Informações do Pet</CardTitle>
+          <CardTitle className="text-xl" style={{ color: '#333' }}>Informações do Pet</CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Photo Upload */}
             <div className="text-center">
               <div className="relative inline-block">
-                <div className="w-32 h-32 rounded-full bg-slate-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#F1F5F9' }}>
                   {photoPreview ? (
                     <img src={photoPreview} alt="Pet preview" className="w-full h-full object-cover" />
                   ) : (
@@ -174,22 +163,24 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Nome *</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Nome *</label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nome do pet"
-                  className="bg-slate-50 border-slate-200 h-12"
+                  className="h-12 border-slate-200"
+                  style={{ backgroundColor: '#F1F5F9' }}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Tipo *</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Tipo *</label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as 'dog' | 'cat')}
-                  className="w-full h-12 px-3 bg-slate-50 border border-slate-200 rounded-md text-gray-700"
+                  className="w-full h-12 px-3 border border-slate-200 rounded-md"
+                  style={{ backgroundColor: '#F1F5F9', color: '#333' }}
                 >
                   <option value="dog">Cachorro</option>
                   <option value="cat">Gato</option>
@@ -197,31 +188,34 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Raça</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Raça</label>
                 <Input
                   value={breed}
                   onChange={(e) => setBreed(e.target.value)}
                   placeholder="Raça do pet"
-                  className="bg-slate-50 border-slate-200 h-12"
+                  className="h-12 border-slate-200"
+                  style={{ backgroundColor: '#F1F5F9' }}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Data de Nascimento</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Data de Nascimento</label>
                 <Input
                   type="date"
                   value={birthDate}
                   onChange={(e) => setBirthDate(e.target.value)}
-                  className="bg-slate-50 border-slate-200 h-12"
+                  className="h-12 border-slate-200"
+                  style={{ backgroundColor: '#F1F5F9' }}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Sexo</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Sexo</label>
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value as 'male' | 'female')}
-                  className="w-full h-12 px-3 bg-slate-50 border border-slate-200 rounded-md text-gray-700"
+                  className="w-full h-12 px-3 border border-slate-200 rounded-md"
+                  style={{ backgroundColor: '#F1F5F9', color: '#333' }}
                 >
                   <option value="male">Macho</option>
                   <option value="female">Fêmea</option>
@@ -229,33 +223,36 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Peso (kg)</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Peso (kg)</label>
                 <Input
                   type="number"
                   step="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   placeholder="Peso em kg"
-                  className="bg-slate-50 border-slate-200 h-12"
+                  className="h-12 border-slate-200"
+                  style={{ backgroundColor: '#F1F5F9' }}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Cor</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Cor</label>
                 <Input
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   placeholder="Cor principal"
-                  className="bg-slate-50 border-slate-200 h-12"
+                  className="h-12 border-slate-200"
+                  style={{ backgroundColor: '#F1F5F9' }}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Temperamento</label>
+                <label className="text-sm font-medium" style={{ color: '#333' }}>Temperamento</label>
                 <select
                   value={temperamento}
                   onChange={(e) => setTemperamento(e.target.value as 'calmo' | 'medroso' | 'bravo')}
-                  className="w-full h-12 px-3 bg-slate-50 border border-slate-200 rounded-md text-gray-700"
+                  className="w-full h-12 px-3 border border-slate-200 rounded-md"
+                  style={{ backgroundColor: '#F1F5F9', color: '#333' }}
                 >
                   <option value="calmo">Calmo</option>
                   <option value="medroso">Medroso</option>
@@ -266,11 +263,11 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
 
             {/* Health Information */}
             <div className="space-y-6 pt-6 border-t border-gray-100">
-              <h3 className="text-lg font-medium text-gray-700">Informações de Saúde</h3>
+              <h3 className="text-lg font-medium" style={{ color: '#333' }}>Informações de Saúde</h3>
               
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-gray-700">Já vacinou?</label>
+                  <label className="text-sm font-medium" style={{ color: '#333' }}>Já vacinou?</label>
                   <div className="flex gap-6">
                     {[
                       { value: 'sim', label: 'Sim' },
@@ -286,7 +283,7 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
                           onChange={(e) => setVacinadoStatus(e.target.value as 'sim' | 'nao' | 'nao_sei')}
                           className="w-4 h-4 text-blue-600"
                         />
-                        <span className="text-gray-700">{option.label}</span>
+                        <span style={{ color: '#333' }}>{option.label}</span>
                       </label>
                     ))}
                   </div>
@@ -294,18 +291,19 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
 
                 {vacinadoStatus === 'sim' && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Data da última vacina</label>
+                    <label className="text-sm font-medium" style={{ color: '#333' }}>Data da última vacina</label>
                     <Input
                       type="date"
                       value={dataUltimaVacina}
                       onChange={(e) => setDataUltimaVacina(e.target.value)}
-                      className="bg-slate-50 border-slate-200 h-12 max-w-xs"
+                      className="h-12 max-w-xs border-slate-200"
+                      style={{ backgroundColor: '#F1F5F9' }}
                     />
                   </div>
                 )}
 
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-gray-700">Pet possui alguma condição de saúde?</label>
+                  <label className="text-sm font-medium" style={{ color: '#333' }}>Pet possui alguma condição de saúde?</label>
                   <div className="flex gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -315,7 +313,7 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
                         onChange={() => setTemCondicao(true)}
                         className="w-4 h-4 text-blue-600"
                       />
-                      <span className="text-gray-700">Sim</span>
+                      <span style={{ color: '#333' }}>Sim</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -328,19 +326,20 @@ const MyPetPage: React.FC<MyPetPageProps> = ({ userEmail }) => {
                         }}
                         className="w-4 h-4 text-blue-600"
                       />
-                      <span className="text-gray-700">Não</span>
+                      <span style={{ color: '#333' }}>Não</span>
                     </label>
                   </div>
                 </div>
 
                 {temCondicao && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Qual condição?</label>
+                    <label className="text-sm font-medium" style={{ color: '#333' }}>Qual condição?</label>
                     <Input
                       value={qualCondicao}
                       onChange={(e) => setQualCondicao(e.target.value)}
                       placeholder="Descreva a condição de saúde"
-                      className="bg-slate-50 border-slate-200 h-12"
+                      className="h-12 border-slate-200"
+                      style={{ backgroundColor: '#F1F5F9' }}
                     />
                   </div>
                 )}
