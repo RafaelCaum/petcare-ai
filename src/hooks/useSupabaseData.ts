@@ -88,7 +88,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       if (photoFile) {
         try {
           console.log('Uploading photo for new pet...');
-          finalPhotoUrl = await uploadPetPhoto(data.id, photoFile);
+          finalPhotoUrl = await uploadPetPhoto(photoFile, data.id);
           
           if (finalPhotoUrl) {
             // Update the pet record with the photo URL
@@ -156,7 +156,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       if (photoFile) {
         try {
           console.log('Uploading new photo for existing pet...');
-          finalPhotoUrl = await uploadPetPhoto(petId, photoFile);
+          finalPhotoUrl = await uploadPetPhoto(photoFile, petId);
           console.log('Photo uploaded successfully:', finalPhotoUrl);
         } catch (photoError) {
           console.error('Error uploading photo:', photoError);
@@ -703,17 +703,17 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
-  const uploadPetPhoto = async (petId: string, file: File) => {
+  const uploadPetPhoto = async (file: File, petId?: string) => {
     if (!userEmail) {
       console.error('No user email available');
       return null;
     }
 
     try {
-      console.log('Starting photo upload for pet:', petId);
+      console.log('Starting photo upload for pet:', petId || 'new pet');
       
       const fileExt = file.name.split('.').pop();
-      const fileName = `${petId}-${Date.now()}.${fileExt}`;
+      const fileName = `${petId || 'temp'}-${Date.now()}.${fileExt}`;
       const filePath = `${userEmail}/${fileName}`;
 
       console.log('Uploading file to path:', filePath);
