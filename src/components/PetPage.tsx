@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Pet, Vaccination } from '../types/pet';
 import { Button } from './ui/button';
@@ -20,7 +19,7 @@ interface PetPageProps {
   userEmail: string;
   addPet: (petData: Omit<Pet, 'id'>, photoFile?: File) => Promise<Pet | null>;
   updatePet: (petId: string, petData: Omit<Pet, 'id'>, photoFile?: File) => Promise<Pet | null>;
-  uploadPetPhoto: (petId: string, file: File) => Promise<string>;
+  uploadPetPhoto: (file: File, petId?: string) => Promise<string>;
 }
 
 const PetPage: React.FC<PetPageProps> = ({ 
