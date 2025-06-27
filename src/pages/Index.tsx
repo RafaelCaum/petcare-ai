@@ -170,12 +170,10 @@ const Index = () => {
             onAddVaccination={modalHandlers.handleAddVaccination}
             onDeleteVaccination={handleDeleteVaccination}
             onDeletePet={handleDeletePet}
-          />
-        );
-      case 'mypet':
-        return (
-          <MyPetPage
             userEmail={userEmail!}
+            addPet={addPet}
+            updatePet={updatePet}
+            uploadPetPhoto={uploadPetPhoto}
           />
         );
       case 'vetcare':
