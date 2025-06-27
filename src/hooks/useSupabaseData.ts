@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Pet, Reminder, Expense, Vaccination, User } from '../types/pet';
 import { toast } from 'sonner';
+import { useN8nWebhooks } from './useN8nWebhooks';
 
 // Extend the Supabase user type to include photo_url, is_paying, and next_due_date
 type UserWithPhoto = {
@@ -26,6 +27,12 @@ export const useSupabaseData = (userEmail: string | null) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { 
+    triggerVaccinationCompleted, 
+    triggerExpenseAdded, 
+    triggerReminderCreated 
+  } = useN8nWebhooks(userEmail);
 
   useEffect(() => {
     if (!userEmail) {
@@ -249,6 +256,15 @@ export const useSupabaseData = (userEmail: string | null) => {
       };
 
       setExpenses(prev => [...prev, newExpense]);
+
+      // Trigger n8n webhook
+      await triggerExpenseAdded(
+        expense.petId,
+        data.id,
+        expense.amount,
+        expense.category
+      );
+
       return newExpense;
     } catch (error) {
       console.error('Error adding expense:', error);
@@ -293,6 +309,15 @@ export const useSupabaseData = (userEmail: string | null) => {
       };
 
       setReminders(prev => [...prev, newReminder]);
+
+      // Trigger n8n webhook
+      await triggerReminderCreated(
+        reminder.petId,
+        data.id,
+        reminder.type,
+        reminder.date
+      );
+
       return newReminder;
     } catch (error) {
       console.error('Error adding reminder:', error);
@@ -461,23 +486,26 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
-  const markVaccinationAsCompleted = async (vaccinationId: string, newNextDueDate: string) => {
+  const markVaccinationAsCompleted = async (vaccinationId: string, newNextDueDate?: string) => {
     if (!userEmail) return;
 
     try {
       console.log('=== MARKING VACCINATION AS COMPLETED ===');
       console.log('Vaccination ID:', vaccinationId);
-      console.log('New next due date:', newNextDueDate);
       console.log('User email:', userEmail);
 
       const todayDate = new Date().toISOString().split('T')[0];
+      const nextDueDate = newNextDueDate || new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+      
       console.log('Today date:', todayDate);
+      console.log('Next due date:', nextDueDate);
 
       const { data, error } = await supabase
         .from('vaccinations')
         .update({
           date_given: todayDate,
-          next_due_date: newNextDueDate,
+          next_due_date: nextDueDate,
+          status: 'completed'
         })
         .eq('id', vaccinationId)
         .eq('user_email', userEmail)
@@ -513,10 +541,20 @@ export const useSupabaseData = (userEmail: string | null) => {
         return newState;
       });
 
+      // Trigger n8n webhook
+      await triggerVaccinationCompleted(
+        data.pet_id,
+        vaccinationId,
+        data.vaccine_name
+      );
+
+      toast.success('Vacina marcada como concluída!');
+
       console.log('=== VACCINATION UPDATE COMPLETED ===');
       return updatedVaccination;
     } catch (error) {
       console.error('Error marking vaccination as completed:', error);
+      toast.error('Erro ao marcar vacina como concluída.');
       throw error;
     }
   };

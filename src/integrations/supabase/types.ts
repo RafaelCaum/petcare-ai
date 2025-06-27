@@ -320,6 +320,7 @@ export type Database = {
           next_due_date: string
           notes: string | null
           pet_id: string
+          status: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at: string
           user_email: string
           vaccine_name: string
@@ -333,6 +334,7 @@ export type Database = {
           next_due_date: string
           notes?: string | null
           pet_id: string
+          status?: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at?: string
           user_email: string
           vaccine_name: string
@@ -346,6 +348,7 @@ export type Database = {
           next_due_date?: string
           notes?: string | null
           pet_id?: string
+          status?: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at?: string
           user_email?: string
           vaccine_name?: string
@@ -403,7 +406,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      vaccination_status: "completed" | "pending" | "overdue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -518,6 +521,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      vaccination_status: ["completed", "pending", "overdue"],
+    },
   },
 } as const
