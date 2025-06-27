@@ -63,6 +63,36 @@ export type Database = {
           },
         ]
       }
+      n8n_webhooks: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          user_email: string
+          webhook_type: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_email: string
+          webhook_type: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_email?: string
+          webhook_type?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
       pets: {
         Row: {
           avatar: string | null
@@ -70,13 +100,18 @@ export type Database = {
           breed: string | null
           color: string | null
           created_at: string
+          data_ultima_vacina: string | null
           gender: string | null
           id: string
           name: string
           photo_url: string | null
+          qual_condicao: string | null
+          tem_condicao: boolean | null
+          temperamento: string | null
           type: string
           updated_at: string
           user_email: string
+          vacinado_status: string | null
           weight: number | null
         }
         Insert: {
@@ -85,13 +120,18 @@ export type Database = {
           breed?: string | null
           color?: string | null
           created_at?: string
+          data_ultima_vacina?: string | null
           gender?: string | null
           id?: string
           name: string
           photo_url?: string | null
+          qual_condicao?: string | null
+          tem_condicao?: boolean | null
+          temperamento?: string | null
           type: string
           updated_at?: string
           user_email: string
+          vacinado_status?: string | null
           weight?: number | null
         }
         Update: {
@@ -100,13 +140,18 @@ export type Database = {
           breed?: string | null
           color?: string | null
           created_at?: string
+          data_ultima_vacina?: string | null
           gender?: string | null
           id?: string
           name?: string
           photo_url?: string | null
+          qual_condicao?: string | null
+          tem_condicao?: boolean | null
+          temperamento?: string | null
           type?: string
           updated_at?: string
           user_email?: string
+          vacinado_status?: string | null
           weight?: number | null
         }
         Relationships: [
@@ -275,6 +320,7 @@ export type Database = {
           next_due_date: string
           notes: string | null
           pet_id: string
+          status: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at: string
           user_email: string
           vaccine_name: string
@@ -288,6 +334,7 @@ export type Database = {
           next_due_date: string
           notes?: string | null
           pet_id: string
+          status?: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at?: string
           user_email: string
           vaccine_name: string
@@ -301,6 +348,7 @@ export type Database = {
           next_due_date?: string
           notes?: string | null
           pet_id?: string
+          status?: Database["public"]["Enums"]["vaccination_status"] | null
           updated_at?: string
           user_email?: string
           vaccine_name?: string
@@ -350,36 +398,6 @@ export type Database = {
         }
         Relationships: []
       }
-      zapier_webhooks: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          updated_at: string
-          user_email: string
-          webhook_type: string
-          webhook_url: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          updated_at?: string
-          user_email: string
-          webhook_type: string
-          webhook_url: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          updated_at?: string
-          user_email?: string
-          webhook_type?: string
-          webhook_url?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -388,7 +406,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      vaccination_status: "completed" | "pending" | "overdue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -503,6 +521,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      vaccination_status: ["completed", "pending", "overdue"],
+    },
   },
 } as const
