@@ -88,7 +88,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       if (photoFile) {
         try {
           console.log('Uploading photo for new pet...');
-          finalPhotoUrl = await uploadPetPhoto(photoFile, data.id);
+          finalPhotoUrl = await uploadPetPhoto(data.id, photoFile);
           
           if (finalPhotoUrl) {
             // Update the pet record with the photo URL
@@ -156,7 +156,7 @@ export const useSupabaseData = (userEmail: string | null) => {
       if (photoFile) {
         try {
           console.log('Uploading new photo for existing pet...');
-          finalPhotoUrl = await uploadPetPhoto(photoFile, petId);
+          finalPhotoUrl = await uploadPetPhoto(petId, photoFile);
           console.log('Photo uploaded successfully:', finalPhotoUrl);
         } catch (photoError) {
           console.error('Error uploading photo:', photoError);
@@ -299,7 +299,7 @@ export const useSupabaseData = (userEmail: string | null) => {
         id: data.id,
         petId: data.pet_id,
         title: data.title,
-        type: data.type as 'vaccine' | 'vet' | 'grooming' | 'bath' | 'medication' | 'other',
+        type: reminder.type as 'vaccine' | 'vet' | 'grooming' | 'bath' | 'medication' | 'other',
         date: data.date,
         time: data.time,
         notes: data.notes,
@@ -703,17 +703,17 @@ export const useSupabaseData = (userEmail: string | null) => {
     }
   };
 
-  const uploadPetPhoto = async (file: File, petId?: string) => {
+  const uploadPetPhoto = async (petId: string, file: File) => {
     if (!userEmail) {
       console.error('No user email available');
       return null;
     }
 
     try {
-      console.log('Starting photo upload for pet:', petId || 'new pet');
+      console.log('Starting photo upload for pet:', petId);
       
       const fileExt = file.name.split('.').pop();
-      const fileName = `${petId || 'temp'}-${Date.now()}.${fileExt}`;
+      const fileName = `${petId}-${Date.now()}.${fileExt}`;
       const filePath = `${userEmail}/${fileName}`;
 
       console.log('Uploading file to path:', filePath);
